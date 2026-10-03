@@ -128,7 +128,7 @@ input,select,textarea{font:inherit;font-size:16px;padding:12px;border:1px solid 
 <label>Email address<input name="email" type="email" autocomplete="email" required></label>
 <label>Property address<input name="address" autocomplete="street-address" required></label>
 <div class="fgrid two"><label>Postcode<input name="postcode" autocomplete="postal-code" required></label><label>Is your current boiler a combi?<select name="current_boiler_is_combi" required><option value="">Choose</option><option>Yes</option><option>No</option><option>Not sure</option></select></label></div>
-<p class="warn" id="cw" hidden>This offer is for combi-to-combi replacements. Please send your details anyway and we will contact you to discuss your options and quote separately.</p><label>Current boiler make and model (if known)<input name="current_boiler"></label>
+<p class="warn" id="cw" hidden role="alert"><strong>Important:</strong> This fixed-price offer is for like-for-like combi-to-combi replacements only. Please still send your details — we will contact you to discuss suitable options and provide a separate quote.</p><label>Current boiler make and model (if known)<input name="current_boiler"></label>
 <label>Preferred timing<input name="preferred_timing" placeholder="e.g. as soon as possible, or a date"></label>
 <label>Anything else we should know?<textarea name="message" rows="4"></textarea></label>
 <label class="chk"><input type="checkbox" name="understands_like_for_like" value="Yes" required><span>I have read the offer terms. I understand the &pound;2,300 price is for a straightforward like-for-like combi-to-combi replacement, subject to a site assessment, and that any non-standard work will be quoted separately.</span></label>
@@ -139,7 +139,7 @@ input,select,textarea{font:inherit;font-size:16px;padding:12px;border:1px solid 
 /* PASTE YOUR STRIPE PAYMENT LINK FOR THE 2,300 BOILER OFFER BETWEEN THE QUOTES BELOW */
 var STRIPE_BOILER="https://buy.stripe.com/7sY3cw1Lk8Df38m6gSc3m01";
 (function(){var f=document.getElementById('of'),m=document.getElementById('msg'),i=document.getElementById('intro'),o=document.getElementById('ok'),sel=document.querySelector('[name=current_boiler_is_combi]'),cw=document.getElementById('cw'),btn=f.querySelector('button[type=submit]'),rest=document.getElementById('rest'),KEY='sh_boiler_v1',SKIP={_gotcha:1,_subject:1};
-i.textContent=STRIPE_BOILER?'Enter your details below. Once sent, you will go straight to secure online payment.':'Enter your details below and we will contact you to confirm your installation and arrange payment.';
+i.textContent=STRIPE_BOILER?'Enter your details below. Once sent, you will be taken straight to secure online payment with Stripe.':'Enter your details below and we will contact you to confirm your installation and arrange payment.';
 
 var TTL=864e5; /* unsent details are kept on this device for 24 hours after the last edit; details already sent to us are kept for 6 hours (so a payment can be retried) */
 var sent=false;
@@ -149,7 +149,7 @@ function wipe(){try{localStorage.removeItem(KEY)}catch(e){}}
 function apply(v){[].forEach.call(f.elements,function(el){var n=el.name;if(!n||SKIP[n]||el.type==='submit'||el.type==='button')return;if(el.type==='radio'){el.checked=(v[n]===el.value)}else if(el.type==='checkbox'){var k=n+'|'+el.value;if(k in v)el.checked=!!v[k]}else if(n in v){if(el.type==='date'&&el.min&&v[n]<el.min)return;el.value=v[n]}})}
 
 function warn(){cw.hidden=sel.value!=='No'}
-function showDone(){f.style.display='none';f.hidden=true;o.hidden=false;if(STRIPE_BOILER){document.getElementById('okt').textContent='Please complete your payment to secure your boiler replacement.';document.getElementById('pay').href=STRIPE_BOILER;document.getElementById('paywrap').hidden=false}else{document.getElementById('okt').textContent='We will be in touch shortly to confirm your installation and arrange payment.'}}
+function showDone(){f.style.display='none';f.hidden=true;o.hidden=false;if(STRIPE_BOILER){document.getElementById('okt').textContent='Please complete your secure payment with Stripe to secure your boiler replacement. After payment we will be in touch to confirm the installation.';document.getElementById('pay').href=STRIPE_BOILER;document.getElementById('paywrap').hidden=false}else{document.getElementById('okt').textContent='We will be in touch shortly to confirm your installation and arrange payment.'}}
 function showForm(){o.hidden=true;f.hidden=false;f.style.display='';btn.disabled=false;btn.textContent='Secure Your Boiler Replacement';m.textContent=''}
 sel.addEventListener('change',warn);
 f.addEventListener('input',function(){sent=false;write()});f.addEventListener('change',function(){sent=false;write()});
