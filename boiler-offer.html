@@ -124,7 +124,7 @@ input,select,textarea{font:inherit;font-size:16px;padding:12px;border:1px solid 
 <p class="note">See also our general <a href="terms">Terms &amp; Conditions</a>.</p></div>
 
 <h2 id="secure">Secure your boiler replacement</h2><p id="intro"></p>
-<form id="of" class="form" method="POST" action="https://formspree.io/f/mdekrqqj"><div class="fgrid two"><label>Full name<input name="name" autocomplete="name" required></label><label>Telephone number<input name="phone" type="tel" autocomplete="tel" required></label></div>
+<form id="of" class="form" method="POST" action="https://formspree.io/f/mdekrqqj"><p class="note" id="rest" style="display:none">Your earlier details have been restored on this device. <a href="#" id="clr1">Clear saved details</a></p><div class="fgrid two"><label>Full name<input name="name" autocomplete="name" required></label><label>Telephone number<input name="phone" type="tel" autocomplete="tel" required></label></div>
 <label>Email address<input name="email" type="email" autocomplete="email" required></label>
 <label>Property address<input name="address" autocomplete="street-address" required></label>
 <div class="fgrid two"><label>Postcode<input name="postcode" autocomplete="postal-code" required></label><label>Is your current boiler a combi?<select name="current_boiler_is_combi" required><option value="">Choose</option><option>Yes</option><option>No</option><option>Not sure</option></select></label></div>
@@ -134,15 +134,35 @@ input,select,textarea{font:inherit;font-size:16px;padding:12px;border:1px solid 
 <label class="chk"><input type="checkbox" name="understands_like_for_like" value="Yes" required><span>I have read the offer terms. I understand the &pound;2,300 price is for a straightforward like-for-like combi-to-combi replacement, subject to a site assessment, and that any non-standard work will be quoted separately.</span></label>
 <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" class="hp" aria-hidden="true"><input type="hidden" name="_subject" value="Boiler offer: Ideal Logic Max C24 - 2300">
 <button class="btn btn-red big" type="submit">Secure Your Boiler Replacement</button><p id="msg" class="err" role="status"></p></form>
-<div id="ok" class="okbox" hidden><h2>Thank you, your details have been sent</h2><p id="okt"></p><p id="paywrap" hidden><a id="pay" class="btn btn-red big" href="#">Continue to secure payment</a></p></div></div></section>
+<div id="ok" class="okbox" hidden><h2>Thank you, your details have been sent</h2><p id="okt"></p><p id="paywrap" hidden><a id="pay" class="btn btn-red big" href="#">Continue to secure payment</a></p><p class="note"><a href="#" id="edit">Change my details</a> &middot; <a href="#" id="clr2">Start a new enquiry</a></p></div></div></section>
 <script>
 /* PASTE YOUR STRIPE PAYMENT LINK FOR THE 2,300 BOILER OFFER BETWEEN THE QUOTES BELOW */
 var STRIPE_BOILER="https://buy.stripe.com/7sY3cw1Lk8Df38m6gSc3m01";
-(function(){var f=document.getElementById('of'),m=document.getElementById('msg'),i=document.getElementById('intro');
+(function(){var f=document.getElementById('of'),m=document.getElementById('msg'),i=document.getElementById('intro'),o=document.getElementById('ok'),sel=document.querySelector('[name=current_boiler_is_combi]'),cw=document.getElementById('cw'),btn=f.querySelector('button[type=submit]'),rest=document.getElementById('rest'),KEY='sh_boiler_v1',SKIP={_gotcha:1,_subject:1};
 i.textContent=STRIPE_BOILER?'Enter your details below. Once sent, you will go straight to secure online payment.':'Enter your details below and we will contact you to confirm your installation and arrange payment.';
-var sel=document.querySelector('[name=current_boiler_is_combi]'),cw=document.getElementById('cw');sel.addEventListener('change',function(){cw.hidden=sel.value!=='No'});f.addEventListener('submit',function(e){e.preventDefault();m.textContent='';var b=f.querySelector('button');b.disabled=true;b.textContent='Sending...';
-fetch(f.action,{method:'POST',body:new FormData(f),headers:{Accept:'application/json'}}).then(function(r){if(!r.ok)throw 0;f.hidden=true;var o=document.getElementById('ok');o.hidden=false;
-if(STRIPE_BOILER){document.getElementById('okt').textContent='Please complete your payment to secure your boiler replacement.';var p=document.getElementById('pay');p.href=STRIPE_BOILER;document.getElementById('paywrap').hidden=false;window.location.href=STRIPE_BOILER}else{document.getElementById('okt').textContent='We will be in touch shortly to confirm your installation and arrange payment.'}o.scrollIntoView()}).catch(function(){b.disabled=false;b.textContent='Secure Your Boiler Replacement';m.textContent='Sorry, we could not send your details. Please try again or call 07368 268347.'})})})();
+
+var TTL=864e5; /* unsent details are kept on this device for 24 hours after the last edit; details already sent to us are kept for 6 hours (so a payment can be retried) */
+var sent=false;
+function read(){try{var o=JSON.parse(localStorage.getItem(KEY));if(o&&o.t&&o.v&&Date.now()-o.t<(o.sent?216e5:TTL))return o;localStorage.removeItem(KEY)}catch(e){}return null}
+function write(){try{var v={};[].forEach.call(f.elements,function(el){var n=el.name;if(!n||SKIP[n]||el.type==='submit'||el.type==='button')return;if(el.type==='radio'){if(el.checked)v[n]=el.value}else if(el.type==='checkbox'){v[n+'|'+el.value]=el.checked}else{v[n]=el.value}});var any=false;for(var k in v){if(v[k]===true||(v[k]&&v[k]!==''))any=true}if(!any){wipe();return}localStorage.setItem(KEY,JSON.stringify({t:Date.now(),sent:sent,v:v}))}catch(e){}}
+function wipe(){try{localStorage.removeItem(KEY)}catch(e){}}
+function apply(v){[].forEach.call(f.elements,function(el){var n=el.name;if(!n||SKIP[n]||el.type==='submit'||el.type==='button')return;if(el.type==='radio'){el.checked=(v[n]===el.value)}else if(el.type==='checkbox'){var k=n+'|'+el.value;if(k in v)el.checked=!!v[k]}else if(n in v){if(el.type==='date'&&el.min&&v[n]<el.min)return;el.value=v[n]}})}
+
+function warn(){cw.hidden=sel.value!=='No'}
+function showDone(){f.style.display='none';f.hidden=true;o.hidden=false;if(STRIPE_BOILER){document.getElementById('okt').textContent='Please complete your payment to secure your boiler replacement.';document.getElementById('pay').href=STRIPE_BOILER;document.getElementById('paywrap').hidden=false}else{document.getElementById('okt').textContent='We will be in touch shortly to confirm your installation and arrange payment.'}}
+function showForm(){o.hidden=true;f.hidden=false;f.style.display='';btn.disabled=false;btn.textContent='Secure Your Boiler Replacement';m.textContent=''}
+sel.addEventListener('change',warn);
+f.addEventListener('input',function(){sent=false;write()});f.addEventListener('change',function(){sent=false;write()});
+function fresh(ev){ev.preventDefault();wipe();sent=false;f.reset();warn();rest.style.display='none';showForm();window.scrollTo(0,0)}
+document.getElementById('clr1').addEventListener('click',fresh);document.getElementById('clr2').addEventListener('click',fresh);
+document.getElementById('edit').addEventListener('click',function(ev){ev.preventDefault();sent=false;write();showForm();rest.style.display='';f.scrollIntoView()});
+var saved=read();if(saved){apply(saved.v);warn();if(saved.sent){sent=true;showDone()}else{rest.style.display=''}}
+f.addEventListener('submit',function(e){e.preventDefault();m.textContent='';btn.disabled=true;btn.textContent='Sending...';
+var ac=window.AbortController?new AbortController():null,tm=setTimeout(function(){if(ac)ac.abort()},20000);
+fetch(f.action,{method:'POST',body:new FormData(f),headers:{Accept:'application/json'},signal:ac?ac.signal:undefined}).then(function(r){clearTimeout(tm);return r.ok},function(){clearTimeout(tm);return false}).then(function(good){
+if(!good){btn.disabled=false;btn.textContent='Secure Your Boiler Replacement';m.textContent='Sorry, we could not send your details. Please try again or call 07368 268347.';return}
+sent=true;write();try{showDone();o.scrollIntoView()}catch(x){}
+if(STRIPE_BOILER){setTimeout(function(){window.location.href=STRIPE_BOILER},600)}})})})();
 </script>
 </main>
 <footer class="ftr"><div class="wrap grid4">
