@@ -118,5 +118,39 @@ document.getElementById('fmsg').textContent='The online form is not active yet. 
 });}
 })();
 </script>
+<script>
+/* Easter egg: brief red/blue emergency-light flicker (emergency page only). Self-removing, purely visual. */
+(function(){
+if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+var o=document.createElement('div');
+o.setAttribute('aria-hidden','true');
+o.style.cssText='position:fixed;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:2147483000;opacity:0;transition:opacity .45s ease';
+var r=document.createElement('div'),b=document.createElement('div');
+r.style.cssText='position:absolute;left:0;top:0;width:100%;height:100%;opacity:0;background:radial-gradient(ellipse 85% 120% at 0% 40%,rgba(255,20,30,.55) 0%,rgba(255,20,30,.22) 45%,rgba(255,20,30,0) 80%)';
+b.style.cssText='position:absolute;left:0;top:0;width:100%;height:100%;opacity:0;background:radial-gradient(ellipse 85% 120% at 100% 40%,rgba(20,70,255,.55) 0%,rgba(20,70,255,.22) 45%,rgba(20,70,255,0) 80%)';
+o.appendChild(r);o.appendChild(b);document.body.appendChild(o);
+var t0=performance.now(),RUN=1500,done=false;
+/* double-flash pattern, alternating sides, with random intensity jitter */
+function lvl(t,ph){var m=t%280;var on=(m<55)||(m>95&&m<150);return on?(.65+Math.random()*.35):0;}
+function frame(now){
+ if(done)return;
+ var el=now-t0;
+ if(el<RUN){
+  var env=Math.min(1,el/150);
+  var left=Math.floor(el/280)%2===0;
+  r.style.opacity=left?(lvl(el)*env).toFixed(2):(lvl(el+140)*.25*env).toFixed(2);
+  b.style.opacity=left?(lvl(el+140)*.25*env).toFixed(2):(lvl(el)*env).toFixed(2);
+  o.style.opacity='1';
+  requestAnimationFrame(frame);
+ }else{
+  o.style.opacity='0';
+  setTimeout(finish,500);
+ }
+}
+function finish(){if(done)return;done=true;if(o.parentNode)o.parentNode.removeChild(o);}
+requestAnimationFrame(function(){requestAnimationFrame(frame);});
+setTimeout(finish,RUN+1200);
+})();
+</script>
 </body>
 </html>

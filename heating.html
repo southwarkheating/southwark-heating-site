@@ -118,5 +118,83 @@ document.getElementById('fmsg').textContent='The online form is not active yet. 
 });}
 })();
 </script>
+<script>
+/* Easter egg: brief flame roar (heating page only). Self-removing, purely visual. */
+(function(){
+if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+var c=document.createElement('canvas');
+c.setAttribute('aria-hidden','true');
+c.style.cssText='position:fixed;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:2147483000;opacity:1;transition:opacity .6s ease';
+var W=0,H=0,dpr=Math.min(window.devicePixelRatio||1,1.5),ctx=c.getContext('2d');
+function size(){W=window.innerWidth;H=window.innerHeight;c.width=Math.round(W*dpr);c.height=Math.round(H*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);}
+size();
+document.body.appendChild(c);
+var P=[],E=[],t0=performance.now(),last=t0,done=false,TOTAL=3200;
+var NT=Math.max(7,Math.min(20,Math.round(W/80)));
+function sway(T,y,t){return Math.sin(y*.011+t*7+T*2.1)*.55+Math.sin(y*.025-t*11+T*5.3)*.3+Math.sin(y*.05+t*17+T)*.15;}
+function col(l,a){
+ var r,g,b;
+ if(l<.15){r=255;g=250-l*100;b=215-l*900;}
+ else if(l<.45){r=255;g=235-(l-.15)*400;b=80-(l-.15)*250;}
+ else if(l<.75){r=255-(l-.45)*60;g=115-(l-.45)*250;b=5;}
+ else{r=235-(l-.75)*500;g=40-(l-.75)*100;b=5;}
+ return 'rgba('+(r|0)+','+Math.max(0,g|0)+','+Math.max(0,b|0)+','+a+')';
+}
+function frame(now){
+ if(done)return;
+ var el=now-t0,dt=Math.min((now-last)/1000,.05),s=el/1000;last=now;
+ var env=s<.4?s/.4:(s<2.3?1:Math.max(0,1-(s-2.3)/.9));
+ env=Math.max(0,env)*(.9+.1*Math.sin(s*31)+.05*Math.sin(s*13));
+ var q,T,p;
+ for(T=0;T<NT;T++){
+  var hT=H*(.28+.4*(.5+.5*Math.sin(s*6.5+T*1.9))*(.6+.4*Math.sin(s*2.3+T*.7)))*Math.max(.12,env);
+  var n=Math.round(env*(W<600?4:5));
+  for(q=0;q<n&&P.length<900;q++){
+   var life=.5+Math.random()*.5;
+   P.push({T:T,x0:(T+Math.random())/NT*W,y:H+8,vy:-(hT/life)*(.85+Math.random()*.3),life:0,max:life,r:(W<600?11:16)+Math.random()*16,sw:(18+Math.random()*30)*(W<600?.7:1),ph:Math.random()*6.28});
+  }
+ }
+ /* occasional embers */
+ if(env>.4&&Math.random()<.35&&E.length<40)E.push({x:Math.random()*W,y:H,vx:(Math.random()-.5)*60,vy:-H*(.5+Math.random()*.6),life:0,max:.7+Math.random()*.8,r:.8+Math.random()*1.6});
+ ctx.clearRect(0,0,W,H);
+ /* warm glow near bottom */
+ var gg=ctx.createLinearGradient(0,H,0,H*(1-.5*env));
+ gg.addColorStop(0,'rgba(255,110,10,'+(.22*env)+')');gg.addColorStop(1,'rgba(255,70,0,0)');
+ ctx.fillStyle=gg;ctx.fillRect(0,H*.45,W,H*.55);
+ ctx.globalCompositeOperation='lighter';
+ /* blue gas-flame base */
+ var bg=ctx.createLinearGradient(0,H,0,H-H*.07-8);
+ bg.addColorStop(0,'rgba(60,110,255,'+(.35*env)+')');bg.addColorStop(1,'rgba(60,110,255,0)');
+ ctx.fillStyle=bg;ctx.fillRect(0,H-H*.08-8,W,H*.08+8);
+ for(var i=P.length-1;i>=0;i--){
+  p=P[i];p.life+=dt;
+  var l=p.life/p.max;
+  if(l>=1){P.splice(i,1);continue;}
+  p.y+=p.vy*dt*(1-l*.35);
+  var prog=(H-p.y)/H;
+  var x=p.x0+sway(p.T,p.y,s)*p.sw*(.35+prog*1.8);
+  var r=p.r*(1-l*.8),a=(l<.1?l/.1:Math.pow(1-(l-.1)/.9,1.3))*.26;
+  var g=ctx.createRadialGradient(x,p.y,0,x,p.y,r);
+  g.addColorStop(0,col(l,a));g.addColorStop(.55,col(Math.min(1,l+.25),a*.45));g.addColorStop(1,col(1,0));
+  ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(x,p.y,r*.65,r*1.9,sway(p.T,p.y,s)*.25,0,6.283);ctx.fill();
+ }
+ for(i=E.length-1;i>=0;i--){
+  var e=E[i];e.life+=dt;if(e.life>=e.max){E.splice(i,1);continue;}
+  e.x+=(e.vx+Math.sin(e.life*9+i)*30)*dt;e.y+=e.vy*dt;
+  var ea=1-e.life/e.max;
+  ctx.fillStyle='rgba(255,'+(170+Math.random()*60|0)+',60,'+ea*.9+')';
+  ctx.beginPath();ctx.arc(e.x,e.y,e.r,0,6.283);ctx.fill();
+ }
+ ctx.globalCompositeOperation='source-over';
+ if(el>TOTAL-600)c.style.opacity='0';
+ if(el>=TOTAL){finish();return;}
+ requestAnimationFrame(frame);
+}
+function finish(){if(done)return;done=true;window.removeEventListener('resize',size);if(c.parentNode)c.parentNode.removeChild(c);P=null;E=null;}
+window.addEventListener('resize',size);
+requestAnimationFrame(function(){requestAnimationFrame(frame);});
+setTimeout(finish,TOTAL+500);
+})();
+</script>
 </body>
 </html>
