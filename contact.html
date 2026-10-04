@@ -10,6 +10,10 @@
 <meta property="og:title" content="Request a Quote | Southwark Heating, South London"><meta property="og:description" content="Request a quote from Southwark Heating. Gas Safe registered boiler, heating and plumbing engineers serving South London and surrounding areas.">
 <meta property="og:url" content="https://southwarkheating.com/contact"><meta property="og:image" content="https://southwarkheating.com/logo.png">
 <meta name="theme-color" content="#112B4F">
+<link rel="icon" href="favicon.ico" sizes="48x48">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="favicon-192x192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <style>:root{--navy:#112B4F;--red:#C42727;--ink:#1B2733;--mut:#5A6978;--line:#DDE3E9;--bg:#F4F6F9}
 *{box-sizing:border-box}html,body{margin:0}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);line-height:1.6;-webkit-text-size-adjust:100%;background:#fff;padding-bottom:env(safe-area-inset-bottom,0)}
@@ -86,6 +90,10 @@ input,select,textarea{font:inherit;font-size:16px;padding:12px;border:1px solid 
 @media(max-width:559px){.cta .btn,.band .btn{display:block;width:100%;text-align:center;margin:8px 0 0}.cta br{display:none}}
 /* price list link: mobile menu only, desktop header untouched */
 .nav .navpl{display:block}@media(min-width:860px){.nav .navpl{display:none}}
+/* mobile menu: scroll inside the menu when it is taller than the screen */
+@media(max-width:859px){.nav{max-height:calc(100vh - 72px);max-height:calc(100dvh - 72px - env(safe-area-inset-top,0px));overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}}
+/* desktop dropdown: fit all six columns on narrower desktop screens (the columns were wider than the screen below about 1055px) */
+@media(min-width:860px) and (max-width:1079px){.ddmenu{grid-template-columns:repeat(6,minmax(0,1fr));gap:12px;padding:22px 16px}.nav .ddmenu a{white-space:normal}}
 </style>
 
 </head>
@@ -111,7 +119,7 @@ input,select,textarea{font:inherit;font-size:16px;padding:12px;border:1px solid 
 <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" class="hp" aria-hidden="true">
 <input type="hidden" name="_subject" value="New enquiry from southwarkheating.com">
 <button class="btn btn-red" type="submit">Send enquiry</button><p id="fmsg" role="status"></p></form>
-<aside><div class="card"><h2>Get in touch</h2><p>Phone: <a href="tel:+447368268347">07368 268347</a></p><p>Email: <a href="mailto:info@southwarkheating.com">info@southwarkheating.com</a></p><p>South Dock Marina<br>Rope Street<br>London SE16 7SZ</p><p><strong>Gas Safe registration:</strong> 985690</p><p class="note" style="margin-top:12px">For fixed-price services you can also <a href="book-a-service">book and pay online</a>.</p></div>
+<aside><div class="card"><h2>Get in touch</h2><p>Phone: <a href="tel:+447368268347">07368 268347</a></p><p>Email: <a href="mailto:info@southwarkheating.com">info@southwarkheating.com</a></p><p>South Dock Marina<br>Rope Street<br>London SE16 7SZ</p><p><strong>Gas Safe registration:</strong> 985690</p><p class="note" style="margin-top:12px">We aim to respond to enquiries as quickly as possible.</p><p class="note" style="margin-top:8px">For fixed-price services you can also <a href="book-a-service">book and pay online</a>.</p></div>
 <!-- FUTURE: add Stripe Payment Links here as buttons (e.g. <a class="btn btn-red" href="YOUR_STRIPE_LINK">Pay online</a>). Never handle card details on this site. --></aside></div></section>
 </main>
 <footer class="ftr"><div class="wrap grid4">
@@ -123,6 +131,7 @@ input,select,textarea{font:inherit;font-size:16px;padding:12px;border:1px solid 
 <script>(function(){
 var b=document.querySelector('.menu'),n=document.getElementById('nav');
 if(b&&n){b.addEventListener('click',function(){var o=n.classList.toggle('open');b.setAttribute('aria-expanded',o)});}
+if(b&&n){var closeMenu=function(rf){if(n.classList.contains('open')){n.classList.remove('open');b.setAttribute('aria-expanded','false');if(rf)b.focus()}};document.addEventListener('keydown',function(e){if(e.key==='Escape')closeMenu(n.contains(document.activeElement))});n.addEventListener('click',function(e){if(e.target.closest&&e.target.closest('a'))closeMenu(false)})}
 var C=[["heating", "Heating & Boilers", ["Boiler Installation", "Boiler Replacement", "Boiler Repairs", "Boiler Servicing", "Boiler Breakdowns", "Central Heating", "Radiators", "Heating Controls & Thermostats", "Heating & Boiler Quotes", "Gas Safety Checks", "Landlord Gas Safety Certificates"]], ["plumbing", "Plumbing", ["General Plumbing", "Plumbing Repairs", "Leaking Pipes", "Leaking Taps", "Toilets", "Sinks & Basins", "Taps", "Water Leaks", "Pumps", "Plumbing Quotes"]], ["bathrooms", "Bathrooms", ["Bathroom Installation", "Bathroom Refurbishment", "Showers", "Toilets", "Basins", "Bathroom Plumbing", "Towel Radiators", "Bathroom Quotes"]], ["kitchens", "Kitchens", ["Kitchen Plumbing", "Sinks", "Taps", "Dishwasher Connections", "Washing Machine Connections", "Appliance Plumbing", "Radiator Relocation", "Kitchen Plumbing Alterations", "Kitchen Quotes"]], ["maintenance", "Property Maintenance", ["General Repairs", "Property Maintenance", "Landlord Maintenance", "Emergency Call-Outs", "Other Services"]], ["pest", "Pest Control", ["Mice", "Rats", "Cockroaches", "Wasps", "Ants", "Fleas", "Bed bugs", "Other pest"]]];var cs=document.getElementById("cat"),ss=document.getElementById("svc"),sj=document.querySelector("[name=_subject]");function upd(){if(sj)sj.value="New enquiry: "+(cs.value||"General")+(ss.value?" - "+ss.value:"")+" (southwarkheating.com)"}function fill(){ss.innerHTML='<option value="">Choose a service</option>';C.forEach(function(c){if(c[1]===cs.value)c[2].forEach(function(s){var o=document.createElement("option");o.textContent=s;ss.appendChild(o)})});if(!cs.value)ss.innerHTML='<option value="">First choose a category above</option>';upd()}if(cs&&ss){cs.addEventListener("change",fill);ss.addEventListener("change",upd);var q=location.search.match(/category=(\w+)/);if(q)C.forEach(function(c){if(c[0]===q[1]){cs.value=c[1];fill()}})}if(location.protocol.indexOf('http')===0&&/\.html$/.test(location.pathname)){location.replace(location.pathname.replace(/(index)?\.html$/,'')+location.search+location.hash)}document.querySelectorAll('.ddbtn').forEach(function(t){t.addEventListener('click',function(e){e.stopPropagation();var d=t.parentNode,o=d.classList.toggle('open');t.setAttribute('aria-expanded',o)})});function cl(){document.querySelectorAll('.dd.open').forEach(function(d){d.classList.remove('open')})}document.addEventListener('click',cl);document.addEventListener('keydown',function(e){if(e.key==='Escape')cl()});var f=document.getElementById('enq');
 if(f){f.addEventListener('submit',function(e){
 if(f.action.indexOf('YOUR_FORM_ID')>-1){e.preventDefault();
