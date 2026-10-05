@@ -150,7 +150,13 @@ input,select,textarea{font:inherit;font-size:16px;padding:12px;border:1px solid 
 <script>
 /* PASTE YOUR STRIPE PAYMENT LINK FOR THE 2,300 BOILER OFFER BETWEEN THE QUOTES BELOW */
 var STRIPE_BOILER="https://buy.stripe.com/7sY3cw1Lk8Df38m6gSc3m01";
-(function(){var f=document.getElementById('of'),m=document.getElementById('msg'),i=document.getElementById('intro'),o=document.getElementById('ok'),sel=document.querySelector('[name=current_boiler_is_combi]'),cw=document.getElementById('cw'),btn=f.querySelector('button[type=submit]'),rest=document.getElementById('rest'),KEY='sh_boiler_v1',SKIP={_gotcha:1,_subject:1};
+/* Request is also sent to the private business app (see booking-intake). The email to us and the Stripe link are unchanged. */
+var INTAKE="https://ylyasshhvuhhpmpotera.supabase.co/functions/v1/booking-intake";
+function bid(k){try{var o=JSON.parse(localStorage.getItem('sh_bid_v1')||'null');if(o&&o.k===k&&Date.now()-o.t<216e5)return o.id}catch(e){}var id=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,function(c){var r=Math.random()*16|0;return(c=='x'?r:(r&3|8)).toString(16)});try{localStorage.setItem('sh_bid_v1',JSON.stringify({k:k,id:id,t:Date.now()}))}catch(e){}return id}
+function sendIntake(o){try{var c=window.AbortController?new AbortController():null,t=setTimeout(function(){if(c)c.abort()},8000);return fetch(INTAKE,{method:'POST',headers:{'Content-Type':'text/plain;charset=UTF-8'},body:JSON.stringify(o),keepalive:true,signal:c?c.signal:undefined}).then(function(r){clearTimeout(t);return r.ok},function(){clearTimeout(t);return false})}catch(e){return Promise.resolve(false)}}
+function withRef(u,id,em){if(id)u+=(u.indexOf('?')<0?'?':'&')+'client_reference_id=bk_'+id;if(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em||''))u+=(u.indexOf('?')<0?'?':'&')+'prefilled_email='+encodeURIComponent(em);return u}
+
+(function(){var f=document.getElementById('of'),m=document.getElementById('msg'),i=document.getElementById('intro'),o=document.getElementById('ok'),sel=document.querySelector('[name=current_boiler_is_combi]'),cw=document.getElementById('cw'),btn=f.querySelector('button[type=submit]'),rest=document.getElementById('rest'),curId=null,KEY='sh_boiler_v1',SKIP={_gotcha:1,_subject:1};
 i.textContent=STRIPE_BOILER?'Enter your details below. If your current boiler is a combi, you will be taken straight to secure online payment with Stripe once your details are sent.':'Enter your details below and we will contact you to confirm your installation and arrange payment.';
 
 var TTL=864e5; /* unsent details are kept on this device for 24 hours after the last edit; details already sent to us are kept for 6 hours (so a payment can be retried) */
@@ -161,7 +167,7 @@ function wipe(){try{localStorage.removeItem(KEY)}catch(e){}}
 function apply(v){[].forEach.call(f.elements,function(el){var n=el.name;if(!n||SKIP[n]||el.type==='submit'||el.type==='button')return;if(el.type==='radio'){el.checked=(v[n]===el.value)}else if(el.type==='checkbox'){var k=n+'|'+el.value;if(k in v)el.checked=!!v[k]}else if(n in v){if(el.type==='date'&&el.min&&v[n]<el.min)return;el.value=v[n]}})}
 
 function warn(){cw.hidden=sel.value!=='No'}
-function showDone(){f.style.display='none';f.hidden=true;o.hidden=false;if(sel.value!=='Yes'){document.getElementById('okt').textContent=(sel.value==='No'?'You told us your current boiler is not a combi':'You told us you are not sure whether your current boiler is a combi')+', so the fixed-price \u00a32,300 offer is not confirmed for your situation. No payment has been taken. Southwark Heating will contact you to discuss the appropriate option and provide a separate quote.';document.getElementById('paywrap').hidden=true}else if(STRIPE_BOILER){document.getElementById('okt').textContent='Please complete your secure payment with Stripe to secure your boiler replacement. After payment we will be in touch to confirm the installation.';document.getElementById('pay').href=STRIPE_BOILER;document.getElementById('paywrap').hidden=false}else{document.getElementById('okt').textContent='We will be in touch shortly to confirm your installation and arrange payment.'}}
+function showDone(){f.style.display='none';f.hidden=true;o.hidden=false;if(sel.value!=='Yes'){document.getElementById('okt').textContent=(sel.value==='No'?'You told us your current boiler is not a combi':'You told us you are not sure whether your current boiler is a combi')+', so the fixed-price \u00a32,300 offer is not confirmed for your situation. No payment has been taken. Southwark Heating will contact you to discuss the appropriate option and provide a separate quote.';document.getElementById('paywrap').hidden=true}else if(STRIPE_BOILER){document.getElementById('okt').textContent='Please complete your secure payment with Stripe to secure your boiler replacement. After payment we will be in touch to confirm the installation.';document.getElementById('pay').href=withRef(STRIPE_BOILER,curId||(function(){try{var o=JSON.parse(localStorage.getItem('sh_bid_v1')||'null');return o&&Date.now()-o.t<216e5?o.id:null}catch(x){return null}})(),f.elements.email?f.elements.email.value:'');document.getElementById('paywrap').hidden=false}else{document.getElementById('okt').textContent='We will be in touch shortly to confirm your installation and arrange payment.'}}
 function showForm(){o.hidden=true;f.hidden=false;f.style.display='';btn.disabled=false;btn.textContent='Secure Your Boiler Replacement';m.textContent=''}
 sel.addEventListener('change',warn);
 f.addEventListener('input',function(){sent=false;write()});f.addEventListener('change',function(){sent=false;write()});
@@ -170,11 +176,16 @@ document.getElementById('clr1').addEventListener('click',fresh);document.getElem
 document.getElementById('edit').addEventListener('click',function(ev){ev.preventDefault();sent=false;write();showForm();rest.style.display='';f.scrollIntoView()});
 var saved=read();if(saved){apply(saved.v);warn();if(saved.sent){sent=true;showDone()}else{rest.style.display=''}}
 f.addEventListener('submit',function(e){e.preventDefault();m.textContent='';btn.disabled=true;btn.textContent='Sending...';
+var en=function(n){return f.elements[n]?f.elements[n].value:''};
+curId=bid(['boiler_offer',en('email'),en('postcode'),en('current_boiler_is_combi')].join('|').toLowerCase());
+var fdata=new FormData(f);fdata.append('booking_ref','bk_'+curId);
+/* the fixed price only applies to a confirmed like-for-like combi; otherwise no price is recorded (it is quoted separately) */
+var ip=sendIntake({booking_id:curId,service_key:'boiler_offer',price:sel.value==='Yes'?2300:0,name:en('name'),email:en('email'),phone:en('phone'),address:en('address'),postcode:en('postcode'),message:en('message'),current_boiler_is_combi:en('current_boiler_is_combi'),current_boiler:en('current_boiler'),preferred_timing:en('preferred_timing'),_gotcha:en('_gotcha')});
 var ac=window.AbortController?new AbortController():null,tm=setTimeout(function(){if(ac)ac.abort()},20000);
-fetch(f.action,{method:'POST',body:new FormData(f),headers:{Accept:'application/json'},signal:ac?ac.signal:undefined}).then(function(r){clearTimeout(tm);return r.ok},function(){clearTimeout(tm);return false}).then(function(good){
+fetch(f.action,{method:'POST',body:fdata,headers:{Accept:'application/json'},signal:ac?ac.signal:undefined}).then(function(r){clearTimeout(tm);return r.ok},function(){clearTimeout(tm);return false}).then(function(good){
 if(!good){btn.disabled=false;btn.textContent='Secure Your Boiler Replacement';m.textContent='Sorry, we could not send your details. Please try again or call 07368 268347.';return}
 sent=true;write();try{showDone();o.scrollIntoView()}catch(x){}
-if(STRIPE_BOILER&&sel.value==='Yes'){setTimeout(function(){window.location.href=STRIPE_BOILER},600)}})})})();
+if(STRIPE_BOILER&&sel.value==='Yes'){setTimeout(function(){var go2=function(){window.location.href=withRef(STRIPE_BOILER,curId,en('email'))};Promise.race([ip,new Promise(function(r){setTimeout(r,2500)})]).then(go2,go2)},600)}})})})();
 </script>
 </main>
 <footer class="ftr"><div class="wrap grid4">
