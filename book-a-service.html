@@ -99,7 +99,7 @@ input,select,textarea{font:inherit;font-size:16px;padding:12px;border:1px solid 
 @media(max-width:859px){.nav{max-height:calc(100vh - 72px);max-height:calc(100dvh - 72px - env(safe-area-inset-top,0px));overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}}
 /* desktop dropdown: fit all six columns on narrower desktop screens (the columns were wider than the screen below about 1055px) */
 @media(min-width:860px) and (max-width:1079px){.ddmenu{grid-template-columns:repeat(6,minmax(0,1fr));gap:12px;padding:22px 16px}.nav .ddmenu a{white-space:normal}}
-</style>
+.ftr .gsy{color:#FFD100;font-weight:700}</style>
 
 </head>
 <body>
@@ -185,10 +185,10 @@ setTimeout(function(){var go2=function(){window.location.href=payUrl(s)};Promise
 </main>
 <footer class="ftr"><div class="wrap grid4">
 <div><h2>Southwark Heating</h2><p>South London and surrounding areas<br>South Dock Marina<br>Rope Street<br>London<br>SE16 7SZ</p></div>
-<div><h2>Contact</h2><p>Phone: <a href="tel:+447368268347">07368 268347</a><br>Email: <a href="mailto:info@southwarkheating.com">info@southwarkheating.com</a></p><p><strong>Gas Safe registration:</strong> 985690</p></div>
+<div><h2>Contact</h2><p>Phone: <a href="tel:+447368268347">07368 268347</a><br>Email: <a href="mailto:info@southwarkheating.com">info@southwarkheating.com</a></p><p><strong>Gas Safe registration:</strong> <span class="gsy">985690</span></p></div>
 <div><h2>Pages</h2><p class="links"><a href="./">Home</a><a href="services">Services</a><a href="heating">Heating &amp; Boilers</a><a href="plumbing">Plumbing</a><a href="book-a-service">Book a Service</a><a href="price-list">Price List</a><a href="pest-control">Pest Control</a><a href="about">About</a><a href="emergency">Emergency</a><a href="contact">Contact</a><a href="property-professionals">Work With Us</a></p></div>
 <div><h2>Legal</h2><p><a href="privacy">Privacy Policy</a><br><a href="terms">Terms &amp; Conditions</a></p></div>
-</div><p class="copy">&copy; Southwark Heating. Gas Safe Registered, No. 985690.</p></footer>
+</div><p class="copy">&copy; Southwark Heating. Gas Safe Registered, No. <span class="gsy">985690</span>.</p></footer>
 <script>(function(){
 var b=document.querySelector('.menu'),n=document.getElementById('nav');
 if(b&&n){b.addEventListener('click',function(){var o=n.classList.toggle('open');b.setAttribute('aria-expanded',o)});}
