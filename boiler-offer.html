@@ -107,7 +107,6 @@ input,select,textarea{font:inherit;font-size:16px;padding:12px;border:1px solid 
 .ftr .gsy{color:#FFD100;font-weight:700}</style>
 
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Product","name":"Ideal Logic Max C24 combi boiler: like-for-like replacement, fully installed","brand":{"@type":"Brand","name":"Ideal"},"image":"https://southwarkheating.com/ideal-logic-max-c24-combi-boiler.png","description":"Fixed-price Ideal Logic Max C24 combi boiler replacement, fully installed. For like-for-like combi-to-combi replacements only, subject to a site assessment. Non-standard work is quoted separately.","url":"https://southwarkheating.com/boiler-offer","offers":{"@type":"Offer","price":"2300","priceCurrency":"GBP","url":"https://southwarkheating.com/boiler-offer","seller":{"@id":"https://southwarkheating.com/#business"},"description":"Like-for-like combi-to-combi replacement only, subject to a site assessment."}}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What does like-for-like combi-to-combi mean?","acceptedAnswer":{"@type":"Answer","text":"We remove your existing combi boiler and fit the Ideal Logic Max C24 in its place. It does not cover every possible boiler installation."}},{"@type":"Question","name":"Is any extra work included in the £2,300?","acceptedAnswer":{"@type":"Answer","text":"Standard installation is included. Non-standard installation work is not. Any required alterations to pipework, flue, condensate, controls, electrical work or other additional work will be identified and quoted separately where applicable."}},{"@type":"Question","name":"What if my boiler is not a combi, or I want it moved?","acceptedAnswer":{"@type":"Answer","text":"Replacing a different type of boiler, or moving the boiler to a new location, is not a like-for-like combi-to-combi replacement and will be quoted separately. See boiler installation."}}]}</script>
-<script src="analytics.js" defer></script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
@@ -184,14 +183,14 @@ var fdata=new FormData(f);fdata.append('booking_ref','bk_'+curId);
 var ip=sendIntake({booking_id:curId,service_key:'boiler_offer',price:sel.value==='Yes'?2300:0,name:en('name'),email:en('email'),phone:en('phone'),address:en('address'),postcode:en('postcode'),message:en('message'),current_boiler_is_combi:en('current_boiler_is_combi'),current_boiler:en('current_boiler'),preferred_timing:en('preferred_timing'),_gotcha:en('_gotcha')});
 var ac=window.AbortController?new AbortController():null,tm=setTimeout(function(){if(ac)ac.abort()},20000);
 fetch(f.action,{method:'POST',body:fdata,headers:{Accept:'application/json'},signal:ac?ac.signal:undefined}).then(function(r){clearTimeout(tm);return r.ok},function(){clearTimeout(tm);return false}).then(function(good){
-if(!good){btn.disabled=false;btn.textContent='Secure Your Boiler Replacement';m.textContent='Sorry, we could not send your details. Please try again or call 07368 268347.';return}
+if(!good){btn.disabled=false;btn.textContent='Secure Your Boiler Replacement';m.textContent='Sorry, we could not send your details. Please try again or call 07988 991963.';return}
 sent=true;write();try{showDone();o.scrollIntoView()}catch(x){}
 if(STRIPE_BOILER&&sel.value==='Yes'){setTimeout(function(){var go2=function(){window.location.href=withRef(STRIPE_BOILER,curId,en('email'))};Promise.race([ip,new Promise(function(r){setTimeout(r,2500)})]).then(go2,go2)},600)}})})})();
 </script>
 </main>
 <footer class="ftr"><div class="wrap grid4">
 <div><h2>Southwark Heating</h2><p>South London and surrounding areas<br>South Dock Marina<br>Rope Street<br>London<br>SE16 7SZ</p></div>
-<div><h2>Contact</h2><p>Phone: <a href="tel:+447368268347">07368 268347</a><br>Email: <a href="mailto:info@southwarkheating.com">info@southwarkheating.com</a></p><p><strong>Gas Safe registration:</strong> <span class="gsy">985690</span></p></div>
+<div><h2>Contact</h2><p>Phone: <a href="tel:+447988991963">07988 991963</a><br>Email: <a href="mailto:info@southwarkheating.com">info@southwarkheating.com</a></p><p><strong>Gas Safe registration:</strong> <span class="gsy">985690</span></p></div>
 <div><h2>Pages</h2><p class="links"><a href="./">Home</a><a href="services">Services</a><a href="heating">Heating &amp; Boilers</a><a href="plumbing">Plumbing</a><a href="book-a-service">Book a Service</a><a href="price-list">Price List</a><a href="pest-control">Pest Control</a><a href="about">About</a><a href="emergency">Emergency</a><a href="contact">Contact</a><a href="property-professionals">Work With Us</a></p></div>
 <div><h2>Legal</h2><p><a href="privacy">Privacy Policy</a><br><a href="terms">Terms &amp; Conditions</a></p></div>
 </div><p class="copy">&copy; Southwark Heating. Gas Safe Registered, No. <span class="gsy">985690</span>.</p></footer>
