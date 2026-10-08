@@ -94,7 +94,7 @@ export function recommend(cat, a) {
   const as = assess(a);
   if (as.route !== 'ok') return { ...as, options: [] };
   const need30 = a.bathrooms >= 2 || a.bedrooms >= 4 || a.radiators === '10-13';
-  const needFlow = need30 ? 12 : 10;
+  const needFlow = need30 ? 12 : 9.5;   // a 24 kW combi gives about 9.8 litres/min - right for a 1-bathroom home
   const list = cat.products.filter((p) => p.type === 'combi' && p.fuel === 'gas' && p.dhw_flow_lpm >= needFlow && p.availability !== 'unavailable');
   const priced = list.map((p) => ({ p, price: basePrice(cat, a, p).total }));
   const cheapest = priced.length ? Math.min(...priced.map((x) => x.price)) : 0;

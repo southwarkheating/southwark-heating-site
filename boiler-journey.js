@@ -1,7 +1,7 @@
 import CAT from './boiler-data.js';
 import * as C from './quote-core.js';
 
-const API = ''; // After deploying the Worker, put its address here, e.g. 'https://southwark-boiler-api.YOURNAME.workers.dev'
+const API = 'https://ylyasshhvuhhpmpotera.supabase.co/functions/v1/boiler-order'; // V6: Supabase function - re-prices the order, creates the job in the app and the Stripe link
 const FORM = 'https://formspree.io/f/mdekrqqj'; // your existing website form
 const KEY = 'sh_boiler_journey_v2';
 const root = document.getElementById('sj');
@@ -9,9 +9,10 @@ const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '
 const money = C.gbp;
 
 // ---------- state ----------
-const fresh = () => ({ step: 'start', a: {}, product: null, extras: {}, date: null, cust: {}, pay: 'full', rental: '', notes: '', terms: false, marketing: false, done: null });
+const newId = () => { try { return crypto.randomUUID(); } catch (e) { return 'xxxxxxxx-xxxx-4xxx-8xxx-xxxxxxxxxxxx'.replace(/x/g, () => (Math.random() * 16 | 0).toString(16)); } };
+const fresh = () => ({ oid: newId(), step: 'start', a: {}, product: null, extras: {}, date: null, cust: {}, pay: 'full', rental: '', notes: '', terms: false, marketing: false, done: null });
 let S = load();
-function load() { try { return Object.assign(fresh(), JSON.parse(sessionStorage.getItem(KEY) || '{}')); } catch (e) { return fresh(); } }
+function load() { try { const x = Object.assign(fresh(), JSON.parse(sessionStorage.getItem(KEY) || '{}')); if (!x.oid) x.oid = newId(); return x; } catch (e) { return fresh(); } }
 function save() { try { sessionStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* private mode */ } }
 
 // ---------- questions (order follows a normal homeowner conversation) ----------
@@ -51,7 +52,12 @@ function currentOrder() { return C.priceOrder(CAT, S.a, S.product, S.extras, S.d
 function safeOrder() { const o = currentOrder(); return o.ok ? o : C.priceOrder(CAT, S.a, S.product, S.extras, null); }
 
 function boilerImg(p) {
-  if (p.image) return `<img src="${esc(p.image)}" alt="${esc(p.manufacturer + ' ' + p.model)} boiler" loading="lazy" width="120" height="150">`;
+  const svg = boilerSvg(p), alt = esc(p.manufacturer + ' ' + p.model) + ' boiler';
+  const srcs = [p.image, p.image_url].filter(Boolean);
+  if (srcs.length) return `<img src="${esc(srcs[0])}" data-alt-src="${esc(srcs[1] || '')}" alt="${alt}" loading="lazy" width="120" height="150" style="object-fit:contain" referrerpolicy="no-referrer" onerror="if(this.dataset.altSrc){this.src=this.dataset.altSrc;this.dataset.altSrc=''}else{var s=this.nextElementSibling;this.replaceWith(s.firstElementChild);s.remove()}"><span style="display:none">${svg}</span>`;
+  return svg;
+}
+function boilerSvg(p) {
   return `<svg viewBox="0 0 120 150" role="img" aria-label="${esc(p.manufacturer + ' ' + p.model)} boiler"><rect x="22" y="22" width="76" height="106" rx="9" fill="#fff" stroke="#DDE3E9" stroke-width="2"/><rect x="42" y="6" width="36" height="18" rx="3" fill="#EEF1F5" stroke="#DDE3E9" stroke-width="2"/><rect x="32" y="34" width="56" height="42" rx="5" fill="#F4F6F9"/><rect x="26" y="88" width="68" height="14" fill="#112B4F"/><circle cx="40" cy="95" r="4" fill="#fff"/><circle cx="60" cy="95" r="4" fill="#fff"/><rect x="72" y="91" width="16" height="8" rx="2" fill="#C42727"/><rect x="34" y="132" width="52" height="10" rx="3" fill="#B8C2CD"/></svg>`;
 }
 
@@ -142,11 +148,12 @@ function scrResults() {
   const r = C.recommend(CAT, S.a);
   if (r.route !== 'ok') return scrQuote();
   const incl = CAT.included.map((x) => `<li>${esc(x)}</li>`).join('');
-  const cards = r.options.map((o) => {
+  const SHOW = 6;
+  const cards = r.options.map((o, idx) => {
     const p = o.product;
-    const specs = [['Heating output', p.ch_kw + ' kW'], ['Hot water flow', p.dhw_flow_lpm + ' litres/min'], ['Warranty', p.warranty_years + ' years'], p.efficiency_pct ? ['Efficiency', 'ErP class ' + (p.erp || '') + ', ' + p.efficiency_pct + '%'] : null, ['Type', 'Combi (no tank)']].filter(Boolean)
+    const specs = [p.ch_kw ? ['Heating output', p.ch_kw + ' kW'] : null, ['Hot water flow', 'about ' + p.dhw_flow_lpm + ' litres/min'], p.warranty_years ? ['Warranty', p.warranty_years + ' years'] : null, p.efficiency_pct ? ['Efficiency', 'ErP class ' + (p.erp || '') + ', ' + p.efficiency_pct + '%'] : null, ['Type', 'Combi (no tank)']].filter(Boolean)
       .map(([a, b]) => `<div><dt>${a}</dt><dd>${esc(b)}</dd></div>`).join('');
-    return `<article class="sj-prod ${o.badges[0] === 'Best match' ? 'best' : ''}">
+    return `<article class="sj-prod ${o.badges[0] === 'Best match' ? 'best' : ''}"${idx >= SHOW && !S.showAll ? ' hidden' : ''}>
       ${o.badges.length ? `<p class="sj-badges">${o.badges.map((b) => `<span class="sj-tag">${esc(b)}</span>`).join('')}</p>` : ''}
       <div class="sj-prod-top"><div class="sj-img">${boilerImg(p)}</div><div><p class="sj-mf">${esc(p.manufacturer)}</p><h3>${esc(p.model)}</h3><p class="sj-why">${esc(o.why)}</p></div></div>
       <ul class="sj-ben">${p.benefits.map((b) => `<li>${esc(b)}</li>`).join('')}</ul>
@@ -155,7 +162,7 @@ function scrResults() {
       <div class="sj-buy"><div><span class="sj-lbl">Your fixed price including installation</span><span class="sj-price">${money(o.price)}</span></div><button class="sj-btn" data-choose="${esc(p.id)}">Choose this boiler</button></div></article>`;
   }).join('');
   const notes = r.notes.length ? `<div class="sj-alert"><b>Good to know</b>${r.notes.map((n) => `<p>${esc(n)}</p>`).join('')}</div>` : '';
-  return `<div class="sj-card">${header('Boilers that suit your home', 'These are sized for the answers you gave. Prices are fixed and include fitting.', true)}${notes}${cards || '<p>No boilers found.</p>'}
+  return `<div class="sj-card">${header('Boilers that suit your home', 'These are sized for the answers you gave. Prices are fixed and include fitting.', true)}${notes}${cards || '<p>No boilers found.</p>'}${r.options.length > SHOW && !S.showAll ? `<button type="button" class="sj-btn sj-ghost" data-act="show-all">Show all ${r.options.length} boilers</button>` : ''}
   <div class="sj-save"><details><summary>Save this quote for later</summary><form id="sj-save" novalidate><label for="se">Your email</label><input id="se" type="email" autocomplete="email" inputmode="email"><p class="sj-err" id="se-e" role="alert"></p><button class="sj-btn sj-ghost" type="submit">Email me this quote</button></form></details></div>
   <p class="sj-note">Need to talk first? Call <a href="tel:+44${CAT.settings.phone.replace(/^0/, '').replace(/\s/g, '')}">${esc(CAT.settings.phone)}</a>.</p></div>`;
 }
@@ -278,6 +285,7 @@ function bind() {
   on('[data-act="back"]', back);
   on('[data-act="multi-next"]', () => { const k = S.step.slice(2); if (!Array.isArray(S.a[k]) || !S.a[k].length) S.a[k] = ['none']; next(k); });
   on('[data-act="change"]', () => go('results'));
+  on('[data-act="show-all"]', () => { S.showAll = true; save(); keepScroll(render); });
   on('[data-act="to-date"]', () => go('date'));
   on('[data-act="to-details"]', () => { if (S.date) go('details'); });
   on('[data-go]', (el) => go(el.dataset.go));
@@ -295,7 +303,7 @@ function bind() {
   const ld = root.querySelector('#sj-lead');
   if (ld) ld.addEventListener('submit', async (e) => { e.preventDefault(); const name = ld.ln.value.trim(), phone = ld.lp.value.trim(), email = ld.le.value.trim(); S.cust = { ...S.cust, name, phone, email }; save(); const er = root.querySelector('#l-e'); if (!name || !C.isPhone(phone) || !C.isEmail(email)) { er.textContent = 'Please check your name, phone number and email.'; return; } ld.querySelector('button').disabled = true; const ok = await sendForm({ name, email, phone, postcode: S.a.postcode, message: quoteText('PERSONAL PRICE REQUEST') + '\nReasons: ' + C.assess(S.a).why.join(', ') }); if (ok) { S.done = { mode: 'lead' }; go('done'); } else { er.textContent = 'Sorry, that did not send. Please call ' + CAT.settings.phone + '.'; ld.querySelector('button').disabled = false; } });
   const dt = root.querySelector('#sj-det');
-  if (dt) dt.addEventListener('submit', (e) => { e.preventDefault(); if (submitDetails()) go('review'); });
+  if (dt) dt.addEventListener('submit', (e) => { e.preventDefault(); if (submitDetails()) { sendLead(); go('review'); } });
   root.querySelectorAll('input[name="pay"]').forEach((r) => r.addEventListener('change', () => { S.pay = r.value; save(); keepScroll(render); }));
   const t = root.querySelector('#terms'); if (t) t.addEventListener('change', () => { S.terms = t.checked; save(); });
   const mk = root.querySelector('#mkt'); if (mk) mk.addEventListener('change', () => { S.marketing = mk.checked; save(); });
@@ -339,6 +347,28 @@ async function sendForm(f) {
   } catch (e) { return false; }
 }
 
+
+// ---------- V6: tell Southwark Heating as soon as the details are in (before any payment) ----------
+function orderBody(action) {
+  const c = S.cust, ad = c.addr || {};
+  return { action, order_id: S.oid, answers: S.a, product_id: S.product, extras: S.extras, date: S.date, customer: { first: c.first, last: c.last, email: c.email, phone: c.phone }, address: ad, rental: S.rental, notes: S.notes, pay: S.pay, consent: { terms: !!S.terms, marketing: !!S.marketing } };
+}
+async function callApi(action) {
+  const r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(orderBody(action)) });
+  let j = {}; try { j = await r.json(); } catch (e) { /* */ }
+  return { ok: r.ok && j.ok, j };
+}
+function leadMsg(tag) {
+  const c = S.cust, ad = c.addr || {}, o = safeOrder();
+  return quoteText(tag) + '\nInstall date: ' + (S.date || '-') + '\nAddress: ' + [ad.line1, ad.line2, ad.town, ad.postcode].filter(Boolean).join(', ') + '\nRental: ' + S.rental + '\nNotes: ' + S.notes + (o && o.ok ? '\nTotal: ' + money(o.total) : '');
+}
+function sendLead() {
+  const c = S.cust, key = S.oid + '|' + S.product + '|' + S.date + '|' + JSON.stringify(S.extras);
+  if (S.leadSent === key) return; S.leadSent = key; save();
+  if (API) callApi('lead').catch(() => {});
+  sendForm({ name: c.first + ' ' + c.last, email: c.email, phone: c.phone, postcode: (c.addr || {}).postcode, message: leadMsg('BOILER INSTALL LEAD - details entered, NOT paid yet (chase up)') });
+}
+
 async function placeOrder() {
   const er = root.querySelector('#rv-e'), btn = root.querySelector('#sj-go');
   const o = currentOrder();
@@ -350,9 +380,9 @@ async function placeOrder() {
   const summary = { product: o.product.manufacturer + ' ' + o.product.model, total: o.total, date: S.date, dateText };
   try {
     if (API) {
-      const r = await fetch(API + '/api/order', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ answers: S.a, product_id: S.product, extras: S.extras, date: S.date, customer: { first: c.first, last: c.last, email: c.email, phone: c.phone }, address: ad, rental: S.rental, notes: S.notes, pay: S.pay, consent: { terms: true, marketing: S.marketing }, client_total: o.total }) });
-      const j = await r.json();
-      if (!r.ok || !j.ok) throw new Error(j.error || 'failed');
+      const { ok, j } = await callApi('order');
+      if (!ok) { if (j && j.ref) { S.done = { ...summary, ref: j.ref, mode: 'request' }; save(); } throw new Error(j && j.error || 'failed'); }
+      await sendForm({ name: c.first + ' ' + c.last, email: c.email, phone: c.phone, postcode: ad.postcode, message: leadMsg('BOILER INSTALL - customer went to pay ' + (S.pay === 'deposit' && o.total > CAT.settings.deposit ? 'the deposit' : 'in full') + ' (ref ' + j.ref + ')') });
       S.done = { ...summary, ref: j.ref, mode: j.mode === 'checkout' ? 'paid' : 'request' }; save();
       if (j.mode === 'checkout' && j.url) { window.location.href = j.url; return; }
     } else {
@@ -365,7 +395,7 @@ async function placeOrder() {
     go('done');
   } catch (e) {
     btn.disabled = false; btn.textContent = 'Try again';
-    er.textContent = 'Sorry, we could not complete that. Nothing has been charged. Please try again or call ' + CAT.settings.phone + '.';
+    er.textContent = (e && e.message && e.message !== 'failed' && e.message !== 'send' ? e.message + ' ' : 'Sorry, we could not complete that. Nothing has been charged. ') + 'Please try again or call ' + CAT.settings.phone + '.';
   }
 }
 
