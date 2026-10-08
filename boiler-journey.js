@@ -10,7 +10,7 @@ const money = C.gbp;
 
 // ---------- state ----------
 const newId = () => { try { return crypto.randomUUID(); } catch (e) { return 'xxxxxxxx-xxxx-4xxx-8xxx-xxxxxxxxxxxx'.replace(/x/g, () => (Math.random() * 16 | 0).toString(16)); } };
-const fresh = () => ({ oid: newId(), step: 'start', a: {}, product: null, extras: {}, date: null, cust: {}, pay: 'full', rental: '', notes: '', terms: false, marketing: false, done: null });
+const fresh = () => ({ oid: newId(), step: 'start', a: {}, product: null, extras: {}, date: null, cust: {}, pay: 'full', rental: '', notes: '', promo: '', terms: false, marketing: false, done: null });
 let S = load();
 function load() { try { const x = Object.assign(fresh(), JSON.parse(sessionStorage.getItem(KEY) || '{}')); if (!x.oid) x.oid = newId(); return x; } catch (e) { return fresh(); } }
 function save() { try { sessionStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* private mode */ } }
@@ -48,8 +48,22 @@ function go(step, push = true) {
 }
 window.addEventListener('popstate', (e) => { const st = (e.state && e.state.step) || 'start'; S.step = st; save(); render(); });
 
-function currentOrder() { return C.priceOrder(CAT, S.a, S.product, S.extras, S.date); }
+// The £100 code is only taken off when the customer has typed it (S.promo). If it no longer fits (e.g. a 2027 date) the order is shown without it, with a message.
+function currentOrder() {
+  const o = C.priceOrder(CAT, S.a, S.product, S.extras, S.date, undefined, S.promo);
+  if (!o.ok && o.promoError) { const b = C.priceOrder(CAT, S.a, S.product, S.extras, S.date); b.promoErr = o.error; return b; }
+  return o;
+}
 function safeOrder() { const o = currentOrder(); return o.ok ? o : C.priceOrder(CAT, S.a, S.product, S.extras, null); }
+const dealLive = () => C.checkPromo(C.PROMO_DEFAULT, null).ok;
+function promoBox(o) {
+  if (!dealLive() && !S.promo) return '';
+  const on = o && o.ok && o.promo;
+  return `<div class="sj-promo" id="sj-promo"><p class="sj-promo-t"><b>Got a promo code?</b>${on ? '' : ' <span>Book and install by 31 December 2026 with code <b>SOUTHWARK100</b> to save £100.</span>'}</p>
+  ${on ? `<p class="sj-promo-ok">&#10003; Code <b>${esc(o.promo)}</b> applied. You save ${money(C.PROMOS[o.promo].amount)}. <button type="button" class="sj-link" data-act="promo-off">Remove</button></p>`
+  : `<form id="sj-pf" class="sj-promo-f" novalidate><label for="pcode" class="sj-vh">Promo code</label><input id="pcode" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Enter code" value="${esc(S.promoTry || '')}"><button class="sj-btn sj-promo-b" type="submit">Apply</button></form>`}
+  <p class="sj-err" id="pc-err" role="alert">${esc((o && o.promoErr) || S.promoMsg || '')}</p></div>`;
+}
 
 function boilerImg(p) {
   const svg = boilerSvg(p), alt = esc(p.manufacturer + ' ' + p.model) + ' boiler';
@@ -71,7 +85,7 @@ function header(title, help, back = true) {
 
 function summaryBox(o, opts = {}) {
   if (!o || !o.ok) return '';
-  const rows = o.lines.map((l) => `<div class="sj-row"><span>${esc(l.label)}</span><b>${money(l.amount)}</b></div>`).join('');
+  const rows = o.lines.map((l) => `<div class="sj-row${l.amount < 0 ? ' sj-disc' : ''}"><span>${esc(l.label)}</span><b>${money(l.amount)}</b></div>`).join('');
   return `<div class="sj-sum" aria-live="polite"><div class="sj-sum-t">${esc(o.product.manufacturer + ' ' + o.product.model)}</div>${rows}<div class="sj-row sj-tot"><span>Total fixed price</span><b>${money(o.total)}</b></div><p class="sj-note">${esc(CAT.settings.price_note)}</p></div>`;
 }
 
@@ -159,10 +173,11 @@ function scrResults() {
       <ul class="sj-ben">${p.benefits.map((b) => `<li>${esc(b)}</li>`).join('')}</ul>
       <dl class="sj-specs">${specs}</dl>
       <details class="sj-more"><summary>See what is included</summary><ul>${incl}</ul><p class="sj-note">${esc(p.warranty_note)}.</p></details>
-      <div class="sj-buy"><div><span class="sj-lbl">Your fixed price including installation</span><span class="sj-price">${money(o.price)}</span></div><button class="sj-btn" data-choose="${esc(p.id)}">Choose this boiler</button></div></article>`;
+      <div class="sj-buy"><div><span class="sj-lbl">Your fixed price including installation</span><span class="sj-price">${money(o.price)}</span>${dealLive() ? `<span class="sj-deal">Or ${money(o.price - C.PROMOS[C.PROMO_DEFAULT].amount)} with code <b>SOUTHWARK100</b>*</span>` : ''}</div><button class="sj-btn" data-choose="${esc(p.id)}">Choose this boiler</button></div></article>`;
   }).join('');
   const notes = r.notes.length ? `<div class="sj-alert"><b>Good to know</b>${r.notes.map((n) => `<p>${esc(n)}</p>`).join('')}</div>` : '';
-  return `<div class="sj-card">${header('Boilers that suit your home', 'These are sized for the answers you gave. Prices are fixed and include fitting.', true)}${notes}${cards || '<p>No boilers found.</p>'}${r.options.length > SHOW && !S.showAll ? `<button type="button" class="sj-btn sj-ghost" data-act="show-all">Show all ${r.options.length} boilers</button>` : ''}
+  const deal = dealLive() ? `<div class="sj-dealbar"><span class="sj-dealbadge">SAVE<br>£100</span><p><b>Winter deal:</b> book and install by 31 December 2026 and save £100. Enter code <b>SOUTHWARK100</b> when you review your order.</p></div>` : '';
+  return `<div class="sj-card">${header('Boilers that suit your home', 'These are sized for the answers you gave. Prices are fixed and include fitting.', true)}${deal}${notes}${cards || '<p>No boilers found.</p>'}${dealLive() ? '<p class="sj-note">*£100 off with code SOUTHWARK100. Code must be entered at checkout and the installation must take place on or before 31 December 2026. One code per order.</p>' : ''}${r.options.length > SHOW && !S.showAll ? `<button type="button" class="sj-btn sj-ghost" data-act="show-all">Show all ${r.options.length} boilers</button>` : ''}
   <div class="sj-save"><details><summary>Save this quote for later</summary><form id="sj-save" novalidate><label for="se">Your email</label><input id="se" type="email" autocomplete="email" inputmode="email"><p class="sj-err" id="se-e" role="alert"></p><button class="sj-btn sj-ghost" type="submit">Email me this quote</button></form></details></div>
   <p class="sj-note">Need to talk first? Call <a href="tel:+44${CAT.settings.phone.replace(/^0/, '').replace(/\s/g, '')}">${esc(CAT.settings.phone)}</a>.</p></div>`;
 }
@@ -249,7 +264,7 @@ function scrReview() {
   <h3>Install date</h3><p>${esc(dt)} <button type="button" class="sj-link" data-go="date">Change</button><br><small>${esc(CAT.settings.arrival_note)}</small></p>
   <h3>Installed at</h3><p>${esc([ad.line1, ad.line2, ad.town, ad.postcode].filter(Boolean).join(', '))} <button type="button" class="sj-link" data-go="details">Change</button></p>
   <h3>Your details</h3><p>${esc(c.first + ' ' + c.last)}<br>${esc(c.email)}<br>${esc(c.phone)}</p></div>
-  ${summaryBox(o)}${o.notes.length ? `<div class="sj-alert"><b>We will check on site</b>${o.notes.map((n) => `<p>${esc(n)}</p>`).join('')}</div>` : ''}
+  ${promoBox(o)}${summaryBox(o)}${o.notes.length ? `<div class="sj-alert"><b>We will check on site</b>${o.notes.map((n) => `<p>${esc(n)}</p>`).join('')}</div>` : ''}
   <div class="sj-rev"><h3>What is included</h3><ul class="sj-ticks">${CAT.included.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></div>
   ${live ? payBlock : '<div class="sj-alert"><b>Book now, pay when we confirm</b><p>Online card payment is being switched on. Send your booking request and we will confirm your date and take payment with you directly.</p></div>'}
   <label class="sj-check"><input type="checkbox" id="terms" ${S.terms ? 'checked' : ''}> <span>I agree to the <a href="terms" target="_blank" rel="noopener">Terms &amp; Conditions</a> and <a href="privacy" target="_blank" rel="noopener">Privacy Policy</a>.</span></label>
@@ -266,7 +281,7 @@ function scrDone() {
   return `<div class="sj-card sj-done"><h2 class="sj-h" data-focus>${paid ? 'Thank you, your order is confirmed' : 'Thank you, your request is in'}</h2>
   ${d.ref ? `<p class="sj-ref">Reference <b>${esc(d.ref)}</b></p>` : ''}
   <p>${paid ? 'Your payment was received.' : 'We have your booking request.'} ${d.date ? `Your installation date is <b>${esc(d.dateText)}</b>.` : ''}</p>
-  ${d.product ? `<div class="sj-sum"><div class="sj-sum-t">${esc(d.product)}</div><div class="sj-row sj-tot"><span>Total fixed price</span><b>${money(d.total)}</b></div></div>` : ''}
+  ${d.product ? `<div class="sj-sum"><div class="sj-sum-t">${esc(d.product)}</div>${d.promo ? `<div class="sj-row sj-disc"><span>Promo code ${esc(d.promo)}</span><b>included</b></div>` : ''}<div class="sj-row sj-tot"><span>Total fixed price</span><b>${money(d.total)}</b></div></div>` : ''}
   <h3>What happens next</h3><ol class="sj-steps"><li>We check your order and contact you to confirm your date and arrival time.</li><li>If anything on site needs extra work, we agree the price with you before we start.</li><li>Your Gas Safe registered engineer fits your new boiler.</li></ol>
   <p class="sj-note">Questions? Call <a href="tel:+44${CAT.settings.phone.replace(/^0/, '').replace(/\s/g, '')}">${esc(CAT.settings.phone)}</a>.</p><a class="sj-btn sj-ghost" href="./">Back to the home page</a></div>`;
 }
@@ -308,6 +323,15 @@ function bind() {
   const t = root.querySelector('#terms'); if (t) t.addEventListener('change', () => { S.terms = t.checked; save(); });
   const mk = root.querySelector('#mkt'); if (mk) mk.addEventListener('change', () => { S.marketing = mk.checked; save(); });
   const go1 = root.querySelector('#sj-go'); if (go1) go1.addEventListener('click', placeOrder);
+  const pf = root.querySelector('#sj-pf');
+  if (pf) pf.addEventListener('submit', (e) => {
+    e.preventDefault(); const v = pf.querySelector('#pcode').value; S.promoTry = v; S.promoMsg = '';
+    const r = C.checkPromo(v, S.date);
+    if (!C.promoCode(v)) S.promoMsg = 'Please type your code.';
+    else if (!r.ok) S.promoMsg = r.error; else { S.promo = r.code; S.promoTry = ''; }
+    save(); keepScroll(render);
+  });
+  on('[data-act="promo-off"]', () => { S.promo = ''; S.promoMsg = ''; save(); keepScroll(render); });
 }
 function keepScroll(fn) { const y = window.scrollY; fn(); window.scrollTo(0, y); }
 
@@ -351,7 +375,7 @@ async function sendForm(f) {
 // ---------- V6: tell Southwark Heating as soon as the details are in (before any payment) ----------
 function orderBody(action) {
   const c = S.cust, ad = c.addr || {};
-  return { action, order_id: S.oid, answers: S.a, product_id: S.product, extras: S.extras, date: S.date, customer: { first: c.first, last: c.last, email: c.email, phone: c.phone }, address: ad, rental: S.rental, notes: S.notes, pay: S.pay, consent: { terms: !!S.terms, marketing: !!S.marketing } };
+  return { action, order_id: S.oid, answers: S.a, product_id: S.product, extras: S.extras, date: S.date, customer: { first: c.first, last: c.last, email: c.email, phone: c.phone }, address: ad, rental: S.rental, notes: S.notes, pay: S.pay, promo: currentOrder().promo || '', consent: { terms: !!S.terms, marketing: !!S.marketing } };
 }
 async function callApi(action) {
   const r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(orderBody(action)) });
@@ -363,7 +387,7 @@ function leadMsg(tag) {
   return quoteText(tag) + '\nInstall date: ' + (S.date || '-') + '\nAddress: ' + [ad.line1, ad.line2, ad.town, ad.postcode].filter(Boolean).join(', ') + '\nRental: ' + S.rental + '\nNotes: ' + S.notes + (o && o.ok ? '\nTotal: ' + money(o.total) : '');
 }
 function sendLead() {
-  const c = S.cust, key = S.oid + '|' + S.product + '|' + S.date + '|' + JSON.stringify(S.extras);
+  const c = S.cust, key = S.oid + '|' + S.product + '|' + S.date + '|' + JSON.stringify(S.extras) + '|' + (S.promo || '');
   if (S.leadSent === key) return; S.leadSent = key; save();
   if (API) callApi('lead').catch(() => {});
   sendForm({ name: c.first + ' ' + c.last, email: c.email, phone: c.phone, postcode: (c.addr || {}).postcode, message: leadMsg('BOILER INSTALL LEAD - details entered, NOT paid yet (chase up)') });
@@ -377,7 +401,7 @@ async function placeOrder() {
   er.textContent = ''; btn.disabled = true; btn.textContent = 'Please wait...';
   const c = S.cust, ad = c.addr;
   const dateText = new Date(S.date + 'T00:00:00Z').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
-  const summary = { product: o.product.manufacturer + ' ' + o.product.model, total: o.total, date: S.date, dateText };
+  const summary = { product: o.product.manufacturer + ' ' + o.product.model, total: o.total, date: S.date, dateText, promo: o.promo || '' };
   try {
     if (API) {
       const { ok, j } = await callApi('order');

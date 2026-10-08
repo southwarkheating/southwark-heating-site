@@ -6,7 +6,7 @@ export const BAND_LABEL = { '0-5': '0 to 5', '6-9': '6 to 9', '10-13': '10 to 13
 const BAND_UPPER = { '0-5': 5, '6-9': 9, '10-13': 13, '14-16': 16, '17+': 17 };
 export const radiatorGuess = (band) => BAND_UPPER[band] || 0;
 
-export const gbp = (n) => '£' + Math.round(n).toLocaleString('en-GB');
+export const gbp = (n) => (n < 0 ? '-£' : '£') + Math.round(Math.abs(n)).toLocaleString('en-GB');
 
 // Turns the editable source file into the customer-facing data (final prices only, no BOXT figures).
 export function prepareCatalogue(src) {
@@ -112,8 +112,23 @@ export function recommend(cat, a) {
   return { route: 'ok', why: [], notes: as.notes, options: out, need30 };
 }
 
+// ---------- Promo codes (the customer must type the code; the server checks it again) ----------
+// SOUTHWARK100: £100 off, code entered by 31 Dec 2026 AND installation booked on or before 31 Dec 2026.
+export const PROMOS = { SOUTHWARK100: { amount: 100, ends: '2026-12-31', label: 'Winter deal - code SOUTHWARK100' } };
+export const PROMO_DEFAULT = 'SOUTHWARK100';
+export const promoCode = (s) => String(s || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 20);
+export function checkPromo(code, date, now = new Date()) {
+  const k = promoCode(code);
+  if (!k) return { ok: false, none: true };
+  const p = PROMOS[k];
+  if (!p) return { ok: false, error: 'That code is not recognised. Please check it and try again.' };
+  if (londonToday(now) > p.ends) return { ok: false, error: 'Sorry, this offer has ended.' };
+  if (date && date > p.ends) return { ok: false, error: 'This code is for installations on or before 31 December 2026. Choose an earlier date to use it.' };
+  return { ok: true, code: k, amount: p.amount, label: p.label };
+}
+
 // ---------- The full order (used by the page AND re-checked by the Worker) ----------
-export function priceOrder(cat, a, productId, extras = {}, date = null, now = new Date()) {
+export function priceOrder(cat, a, productId, extras = {}, date = null, now = new Date(), promo = '') {
   const as = assess(a || {});
   if (as.route !== 'ok') return { ok: false, error: 'This home needs a personal quote' };
   const options = recommend(cat, a).options;
@@ -138,7 +153,13 @@ export function priceOrder(cat, a, productId, extras = {}, date = null, now = ne
     const s = isWeekend(date) ? cat.settings.weekend_surcharge : 0;
     if (s > 0) { total += s; lines.push({ id: 'weekend', label: 'Weekend installation', amount: s }); }
   }
-  return { ok: true, total, lines, product: opt.product, notes: as.notes };
+  let promoApplied = null;
+  if (promo) {
+    const pc = checkPromo(promo, date, now);
+    if (!pc.ok) return { ok: false, error: pc.error || 'Invalid code', promoError: true };
+    total -= pc.amount; lines.push({ id: 'promo', label: pc.label, amount: -pc.amount }); promoApplied = pc.code;
+  }
+  return { ok: true, total, lines, product: opt.product, notes: as.notes, promo: promoApplied };
 }
 
 export function describeAnswers(a) {
