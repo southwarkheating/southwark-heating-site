@@ -129,7 +129,7 @@ input,select,textarea{font:inherit;font-size:16px;padding:12px;border:1px solid 
 <a class="hlog" href="login" aria-current="page"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>Log in</a>
 <button class="menu" aria-expanded="false" aria-controls="nav" aria-label="Menu"><span></span><span></span><span></span></button>
 <nav id="nav" class="nav" aria-label="Main"><a href="./">Home</a><div class="dd"><a class="ddlink" href="services">Services</a><button class="ddbtn" type="button" aria-expanded="false" aria-label="Show service categories"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button><div class="ddmenu"><div class="ddcol"><a class="ddcat" href="heating">Heating &amp; Boilers</a><ul><li><a href="heating#boiler-installation">Boiler Installation</a></li><li><a href="heating#boiler-replacement">Boiler Replacement</a></li><li><a href="heating#boiler-repairs">Boiler Repairs</a></li><li><a href="heating#boiler-servicing">Boiler Servicing</a></li><li><a href="heating#boiler-breakdowns">Boiler Breakdowns</a></li><li><a href="heating#central-heating">Central Heating</a></li><li><a href="heating#radiators">Radiators</a></li><li><a href="heating#heating-controls-and-thermostats">Heating Controls &amp; Thermostats</a></li><li><a href="heating#heating-and-boiler-quotes">Heating &amp; Boiler Quotes</a></li></ul></div><div class="ddcol"><a class="ddcat" href="plumbing">Plumbing</a><ul><li><a href="plumbing#general-plumbing">General Plumbing</a></li><li><a href="plumbing#plumbing-repairs">Plumbing Repairs</a></li><li><a href="plumbing#leaking-pipes">Leaking Pipes</a></li><li><a href="plumbing#leaking-taps">Leaking Taps</a></li><li><a href="plumbing#toilets">Toilets</a></li><li><a href="plumbing#sinks-and-basins">Sinks &amp; Basins</a></li><li><a href="plumbing#taps">Taps</a></li><li><a href="plumbing#water-leaks">Water Leaks</a></li><li><a href="plumbing#pumps">Pumps</a></li><li><a href="plumbing#plumbing-quotes">Plumbing Quotes</a></li></ul></div><div class="ddcol"><a class="ddcat" href="bathrooms">Bathrooms</a><ul><li><a href="bathrooms#bathroom-installation">Bathroom Installation</a></li><li><a href="bathrooms#bathroom-refurbishment">Bathroom Refurbishment</a></li><li><a href="bathrooms#showers">Showers</a></li><li><a href="bathrooms#toilets">Toilets</a></li><li><a href="bathrooms#basins">Basins</a></li><li><a href="bathrooms#bathroom-plumbing">Bathroom Plumbing</a></li><li><a href="bathrooms#towel-radiators">Towel Radiators</a></li><li><a href="bathrooms#bathroom-quotes">Bathroom Quotes</a></li></ul></div><div class="ddcol"><a class="ddcat" href="kitchens">Kitchens</a><ul><li><a href="kitchens#kitchen-plumbing">Kitchen Plumbing</a></li><li><a href="kitchens#sinks">Sinks</a></li><li><a href="kitchens#taps">Taps</a></li><li><a href="kitchens#dishwasher-connections">Dishwasher Connections</a></li><li><a href="kitchens#washing-machine-connections">Washing Machine Connections</a></li><li><a href="kitchens#appliance-plumbing">Appliance Plumbing</a></li><li><a href="kitchens#radiator-relocation">Radiator Relocation</a></li><li><a href="kitchens#kitchen-plumbing-alterations">Kitchen Plumbing Alterations</a></li><li><a href="kitchens#kitchen-quotes">Kitchen Quotes</a></li></ul></div><div class="ddcol"><a class="ddcat" href="property-maintenance">Property Maintenance</a><ul><li><a href="property-maintenance#general-repairs">General Repairs</a></li><li><a href="property-maintenance#property-maintenance">Property Maintenance</a></li><li><a href="property-maintenance#landlord-maintenance">Landlord Maintenance</a></li><li><a href="property-maintenance#emergency-call-outs">Emergency Call-Outs</a></li><li><a href="property-maintenance#other-services">Other Services</a></li></ul></div><div class="ddcol"><a class="ddcat" href="pest-control">Pest Control</a><ul><li><a href="pest-control#mice">Mice</a></li><li><a href="pest-control#rats">Rats</a></li><li><a href="pest-control#cockroaches">Cockroaches</a></li><li><a href="pest-control#wasps">Wasps</a></li><li><a href="pest-control#ants">Ants</a></li><li><a href="pest-control#fleas">Fleas</a></li><li><a href="pest-control#bed-bugs">Bed Bugs</a></li><li><a href="pest-control#other-household-pests">Other Pests</a></li></ul></div></div></div><a href="book-a-service">Book a Service</a><a class="navpl" href="price-list">Price List</a><a href="about">About</a><a href="emergency">Emergency</a><a href="contact">Contact</a><a class="btn btn-red" href="contact">Request a Quote</a><a class="navlg" href="login">Customer Login</a></nav>
-</div></header>
+</div></header><script>/* V6: customer logged in - hide the header Log in button */(function(){try{var k=Object.keys(localStorage).filter(function(x){return /^sb-.*-auth-token$/.test(x)})[0],s=k&&JSON.parse(localStorage.getItem(k)||"null");if(s&&s.refresh_token){[].forEach.call(document.querySelectorAll(".hlog"),function(a){a.style.display="none"});[].forEach.call(document.querySelectorAll(".navlg"),function(a){a.textContent="My Account"})}}catch(e){}})();</script>
 <main id="main" class="pt">
 <div class="wrap pw">
 <noscript><p class="pnote">Please turn on JavaScript to use your account.</p></noscript>
@@ -162,6 +162,7 @@ var V=document.getElementById('pv');
 if(typeof supabase==='undefined'){V.innerHTML='<div class="pcard"><p class="perr">Could not load. Check your connection and refresh the page.</p></div>';return}
 var sb=supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 var H0=location.hash||'',REC=/type=recovery/.test(H0),D=null,URLS={},TAB='home';
+var INV=(location.search.match(/[?&]invite=([0-9a-fA-F-]{36})(?:&|$)/)||[])[1]||'',INVD=null,PNOTE='';
 function E(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function GBP(n){n=+n||0;return '\u00a3'+n.toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2})}
 function DT(s){if(!s)return '';var d=new Date(String(s).length==10?s+'T12:00:00':s);return isNaN(d)?E(s):d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}
@@ -180,8 +181,9 @@ var DEPTH=0;function nav(st){DEPTH++;history.pushState(st,'',location.pathname);
 function back(fb){if(DEPTH>0)history.back();else fb()}
 function backBtn(){return '<button class="pback" type="button" id="bkx">\u2039 Back</button>'}
 function draw(st){st=st||{};if(st.p=='signup')return signUp();if(st.p=='forgot')return forgot();if(st.p=='signin')return signIn();
- if(st.p=='pass')return newPass(null,true);if(st.p=='job')return job(st.id);if(st.p=='dash'){TAB=st.tab||'home';return D?render():dash()}
+ if(st.p=='pass')return newPass(null,true);if(st.p=='job')return job(st.id);if(st.p=='doc')return doc(st.id,st.pay);if(st.p=='appl')return applForm(st.id);if(st.p=='dash'){TAB=st.tab||'home';return D?render():dash()}
  return D?(TAB='home',render()):signIn()}
+V.addEventListener('click',function(e){var t=e.target&&e.target.closest&&e.target.closest('[data-d],[data-ap],[data-pay]');if(!t)return;e.preventDefault();if(t.dataset.pay)nav({p:'doc',id:t.dataset.pay,pay:1});else if(t.dataset.d)nav({p:'doc',id:t.dataset.d});else nav({p:'appl',id:t.dataset.ap})});
 window.addEventListener('popstate',function(e){DEPTH=Math.max(0,DEPTH-1);if(REC)return;draw(e.state)});
 
 /* ---------- signed-out screens ---------- */
@@ -194,19 +196,21 @@ on('gof',function(){nav({p:'forgot'})});on('gos',function(){nav({p:'signup'})});
 onSub('fin',async function(f){var b=f.querySelector('button');var em=v('em').toLowerCase(),pw=document.getElementById('pw').value;if(!em||!pw)return fail('Enter your email address and password.',em?'pw':'em');busy(b,'Logging in\u2026');
  var r=await sb.auth.signInWithPassword({email:em,password:pw});if(r.error){free(b);var t=/confirm/i.test(r.error.message)?'Please confirm your email first - check your inbox for the link we sent.':'That email and password don\u2019t match. Try again or reset your password.';return fail(t,'pw',['pw'])}})}
 
-function signUp(m){top();V.innerHTML=backBtn()+'<div class="pcard"><h1>Create your account</h1><p class="pmut">Use the same email address you gave us when booking, so your jobs appear automatically.</p><div id="pmsg">'+msg(m)+'</div>'+
+function signUp(m){var inv=INVD;top();V.innerHTML=backBtn()+'<div class="pcard"><h1>Create your account</h1><p class="pmut">'+(inv?'Your details are already on file with us - just choose a password.':'Use the same email address you gave us when booking, so your jobs appear automatically.')+'</p><div id="pmsg">'+msg(m)+'</div>'+
 '<form id="fup" class="pf" novalidate><label for="nm">Full name</label><input id="nm" autocomplete="name" required>'+
 '<label for="em">Email address</label><input id="em" type="email" autocomplete="email" inputmode="email" autocapitalize="none" required>'+
-'<label for="ph">Phone number</label><input id="ph" type="tel" autocomplete="tel" inputmode="tel">'+
-'<label for="ad">Address</label><textarea id="ad" rows="3" autocomplete="street-address" placeholder="e.g. 10 Coniston Court, Eleanor Close, London"></textarea><label for="pc">Postcode</label><input id="pc" autocomplete="postal-code" autocapitalize="characters">'+
+(inv?'':'<label for="ph">Phone number</label><input id="ph" type="tel" autocomplete="tel" inputmode="tel">'+
+'<label for="ad1">Address line 1</label><input id="ad1" autocomplete="address-line1" placeholder="e.g. 10 Coniston Court"><label for="ad2">Address line 2</label><input id="ad2" autocomplete="address-line2" placeholder="e.g. Eleanor Close">'+
+'<label for="ad3">Town / City</label><input id="ad3" autocomplete="address-level2" placeholder="e.g. London"><label for="ad4">County</label><input id="ad4" autocomplete="address-level1"><label for="pc">Postcode</label><input id="pc" autocomplete="postal-code" autocapitalize="characters">')+
 '<label for="pw">Choose a password</label><input id="pw" type="password" autocomplete="new-password" minlength="8" required><small class="pmut">At least 8 characters.</small>'+
 '<label for="pw2">Confirm password</label><input id="pw2" type="password" autocomplete="new-password" required>'+
 '<button class="btn btn-red" type="submit">Create account</button></form><div class="plinks"><button type="button" id="goi">Already have an account? Log in</button></div></div>';
 on('goi',function(){back(function(){signIn()})});on('bkx',function(){back(function(){signIn()})});
+if(inv){document.getElementById('nm').value=inv.name||'';var ie=document.getElementById('em');ie.value=inv.email||'';if(inv.email){ie.readOnly=true;ie.insertAdjacentHTML('afterend','<small class="pmut">This is the email we have on file, so your account links to your records.</small>')}}
 onSub('fup',async function(f){var b=f.querySelector('button'),em=v('em').toLowerCase(),pw=document.getElementById('pw').value;
  if(!v('nm'))return fail('Please enter your name.','nm');if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em))return fail('Please enter a valid email address.','em');
  if(pw.length<8)return fail('Your password needs at least 8 characters.','pw',['pw','pw2']);if(pw!==document.getElementById('pw2').value)return fail('The two passwords don\u2019t match. Please type them again - your other details are still here.','pw',['pw','pw2']);
- busy(b,'Creating account\u2026');var r=await sb.auth.signUp({email:em,password:pw,options:{emailRedirectTo:HERE,data:{name:v('nm'),phone:v('ph'),address:v('ad'),postcode:v('pc')}}});
+ busy(b,'Creating account\u2026');var r=await sb.auth.signUp({email:em,password:pw,options:{emailRedirectTo:HERE,data:INVD?{name:v('nm'),invite:INVD.tok}:{name:v('nm'),phone:v('ph'),address:['ad1','ad2','ad3','ad4'].map(v).filter(Boolean).join(', '),postcode:v('pc')}}});
  if(r.error){free(b);return fail(/rate|security purposes/i.test(r.error.message)?'Too many attempts. Please wait a minute and try again.':/password/i.test(r.error.message)?'Please choose a stronger password.':r.error.message,'pw')}
  if(r.data&&r.data.session)return;/* email confirmation switched off: already signed in */
  checkEmail('We\u2019ve sent a link to '+em+'. Tap it to confirm your email and finish creating your account. If you already have an account, just log in instead.')})}
@@ -232,45 +236,60 @@ onSub('fnp',async function(f){var b=f.querySelector('button'),pw=document.getEle
 var JST={'Booked':'on','Scheduled':'on','In Progress':'amb','Completed':'ok','Cancelled':'','Quoted':'','Awaiting Payment':'due'};
 function jpill(s){return '<span class="pill '+(JST[s]!=null?JST[s]:'')+'">'+E(s||'Booked')+'</span>'}
 function dlabel(d){return d.cert?'Gas Safety Certificate (CP12)':d.type=='invoice'?'Invoice':d.type=='quote'?'Quote':(d.title||'Report')}
-function owe(d){return d.type=='invoice'&&!/cancel/i.test(d.status||'')?Math.max(0,(+d.total||0)-(+d.paid||0)):0}
+function owe(d){return d.type=='invoice'&&!/cancel/i.test(d.status||'')&&!/^paid$/i.test(d.status||'')?Math.max(0,(+d.total||0)-(+d.paid||0)):0}
 function link(d){return (D.links||[]).filter(function(l){return l.document_id==d.id})[0]}
 async function sign(paths){paths=paths.filter(function(p){return p&&!URLS[p]});if(!paths.length)return;var r=await sb.storage.from('job-photos').createSignedUrls(paths,3600);(r.data||[]).forEach(function(x){if(x.signedUrl)URLS[x.path]=x.signedUrl})}
-function drow(d){var o=owe(d),u=d.pdf&&URLS[d.pdf];return '<a class="prow" '+(u?'href="'+E(u)+'" target="_blank" rel="noopener"':'aria-disabled="true"')+'><div><b>'+E(dlabel(d))+'</b>'+(d.number?' <small style="display:inline">'+E(d.number)+'</small>':'')+'<small>'+DT(d.approved_at||d.sent_at||d.created_at)+(u?' \u00b7 Tap to open PDF':' \u00b7 PDF not available yet')+'</small></div><div style="text-align:right">'+(d.type!='report'?'<b>'+GBP(d.total)+'</b><br>':'')+(d.type=='invoice'?(o>0?'<span class="pill due">'+GBP(o)+' to pay</span>':'<span class="pill ok">Paid</span>'):'')+'</div></a>'}
+function drow(d){if(d.type=='quote'||d.type=='invoice')return qrow(d);var o=owe(d),u=d.pdf&&URLS[d.pdf];return '<a class="prow" '+(u?'href="'+E(u)+'" target="_blank" rel="noopener"':'aria-disabled="true"')+'><div><b>'+E(dlabel(d))+'</b>'+(d.number?' <small style="display:inline">'+E(d.number)+'</small>':'')+'<small>'+DT(d.approved_at||d.sent_at||d.created_at)+(u?' \u00b7 Tap to open PDF':d.locked?' \u00b7 Available once payment is received':' \u00b7 PDF not available yet')+'</small></div><div style="text-align:right">'+(d.locked&&!u?'<span class="pill amb">Locked</span>':'')+(d.type!='report'?'<b>'+GBP(d.total)+'</b><br>':'')+(d.type=='invoice'?(o>0?'<span class="pill due">'+GBP(o)+' to pay</span>':'<span class="pill ok">Paid</span>'):'')+'</div></a>'}
 function payBtns(ds){return ds.filter(function(d){return owe(d)>0&&link(d)}).map(function(d){return '<a class="btn btn-red" style="display:block;text-align:center" href="'+E(link(d).url)+'" target="_blank" rel="noopener">Pay '+GBP(owe(d))+' securely ('+E(d.number||'invoice')+')</a>'}).join('')}
 
 async function load(){var r=await sb.rpc('portal_data');if(r.error)throw r.error;D=r.data||{};if(!D.linked)return;
  await sign((D.documents||[]).map(function(d){return d.pdf}).concat((D.photos||[]).map(function(p){return p.path})))}
 
 function welcome(){try{if(sessionStorage.getItem('sh_wel'))return;sessionStorage.setItem('sh_wel','1');sb.functions.invoke('portal-welcome',{body:{}}).catch(function(){})}catch(e){}}
-async function dash(note){top();welcome();V.innerHTML='<p class="pmut pc">Loading your account\u2026</p>';
+async function dash(note){top();welcome();hl(false);V.innerHTML='<p class="pmut pc">Loading your account\u2026</p>';
  try{await load()}catch(e){V.innerHTML='<div class="pcard"><p class="perr">Sorry, your account couldn\u2019t be loaded. Please check your connection and try again.</p><button class="btn btn-dark" id="rt">Try again</button> <button class="btn btn-light" id="lo">Log out</button></div>';on('rt',function(){dash()});on('lo',logout);return}
  if(!D.linked){V.innerHTML='<div class="pcard"><h1>Welcome</h1><p>Your account is set up'+(D.email?' for <b>'+E(D.email)+'</b>':'')+'.</p><p class="pmut">We couldn\u2019t find any bookings for this email address yet. If you\u2019ve booked with us using a different email, call us on <a href="'+TEL+'">'+PHONE+'</a> and we\u2019ll link them up.</p><a class="btn btn-red" href="book-a-service">Book a service</a> <button class="btn btn-light" id="lo">Log out</button></div>';on('lo',logout);return}
  render(note)}
 
-function render(note){var c=(D.customers||[])[0]||{},first=(c.name||'').split(' ')[0];
+function render(note){note=note||PNOTE;PNOTE='';var c=(D.customers||[])[0]||{},first=(c.name||'').split(' ')[0];
  var tabs=[['home','Overview'],['jobs','Jobs'],['docs','Documents'],['pay','Payments'],['acct','My account']];
  V.innerHTML='<div class="ptop"><h1>'+(first?'Hello, '+E(first):'My account')+'</h1><button class="btn btn-light btn-sm" id="lo">Log out</button></div>'+(note?msg(note,'pok'):'')+
  '<div class="ptabs" role="tablist">'+tabs.map(function(t){return '<button role="tab" data-t="'+t[0]+'" aria-selected="'+(TAB==t[0])+'">'+t[1]+'</button>'}).join('')+'</div><div id="pb"></div>'+((D.jobs||[]).some(function(j){return /complete/i.test(j.status||'')})?'<div class="prev"><b>Happy with your Southwark Heating service?</b><span>We\u2019d really appreciate it if you could take a moment to leave us a Google review.</span><a class="btn btn-red" href="'+REVIEW+'" target="_blank" rel="noopener">Leave a Google Review</a></div>':'');
  on('lo',logout);[].forEach.call(V.querySelectorAll('.ptabs button'),function(b){b.addEventListener('click',function(){if(TAB!=b.dataset.t)nav({p:'dash',tab:b.dataset.t})})});
  var P=document.getElementById('pb'),J=D.jobs||[],DS=D.documents||[],PY=D.payments||[];
- if(TAB=='home'){var due=DS.reduce(function(a,d){return a+owe(d)},0),now=new Date().toISOString().slice(0,10),
+ if(TAB=='home'){var due=dues().reduce(function(a,x){return a+x.amt},0),now=new Date().toISOString().slice(0,10),
    next=J.filter(function(j){return j.job_date&&j.job_date>=now&&!/cancel|complete/i.test(j.status)}).sort(function(a,b){return a.job_date>b.job_date?1:-1})[0],
    certs=DS.filter(function(d){return d.cert});
   P.innerHTML='<div class="pgrid"><div class="pcard"><small class="pmut">Outstanding balance</small><div class="pbig">'+GBP(due)+'</div></div><div class="pcard"><small class="pmut">Jobs</small><div class="pbig">'+J.length+'</div></div></div>'+
-  (due>0?'<div class="pcard"><h2>Payment due</h2>'+payBtns(DS)+(payBtns(DS)?'':'<p class="pmut">Call us on <a href="'+TEL+'">'+PHONE+'</a> to pay.</p>')+'</div>':'')+
-  '<div class="pcard"><h2>Next appointment</h2>'+(next?'<button class="prow" data-j="'+next.id+'"><div><b>'+E(next.job_type||'Visit')+'</b><small>'+DT(next.job_date)+(next.job_time?' at '+E(next.job_time):next.time_pref?' \u00b7 '+E(next.time_pref):'')+'</small></div><span class="chev">\u203a</span></button>':'<p class="pmut">No upcoming appointments.</p><a class="btn btn-red" href="book-a-service">Book a service</a>')+'</div>'+
+  (due>0?'<div class="pcard"><h2>Payment due</h2>'+dueHtml()+'</div>':'')+
+  '<div class="pcard"><h2>Next appointment</h2>'+(next?'<button class="prow" data-j="'+next.id+'"><div><b>'+E(next.job_type||'Visit')+'</b><small>'+DT(next.job_date)+(next.job_time?' at '+E(next.job_time):next.time_pref?' \u00b7 '+E(next.time_pref):'')+'</small></div><span class="chev">\u203a</span></button>'+((D.my_appliances||[]).length?'':'<button class="plink" type="button" id="apnext">Add your boiler details before the visit \u203a</button>'):'<p class="pmut">No upcoming appointments.</p><a class="btn btn-red" href="book-a-service">Book a service</a>')+'</div>'+
   (certs.length?'<div class="pcard"><h2>Latest gas safety certificate</h2>'+drow(certs[0])+'</div>':'')+
   ((D.appliances||[]).length?'<div class="pcard"><h2>Your appliances</h2>'+uniqAppl().map(function(a){return '<div class="prow" style="cursor:default"><div><b>'+E([a.make,a.model].filter(Boolean).join(' ')||a.type||'Appliance')+'</b><small>'+E([a.type,a.location].filter(Boolean).join(' \u00b7 '))+(a.checked?' \u00b7 Last checked '+DT(a.checked):'')+'</small></div></div>'}).join('')+'</div>':'')}
  if(TAB=='jobs')P.innerHTML='<div class="pcard"><h2>Your jobs</h2>'+(J.map(function(j){return '<button class="prow" data-j="'+j.id+'"><div><b>'+E(j.job_type||'Job')+'</b><small>'+(j.job_date?DT(j.job_date):'Booked '+DT(j.created_at))+(j.address?' \u00b7 '+E(j.address):'')+'</small></div><div>'+jpill(j.status)+' <span class="chev">\u203a</span></div></button>'}).join('')||'<p class="pmut">No jobs yet.</p>')+'</div>';
  if(TAB=='docs'){var grp=[['Gas safety certificates',DS.filter(function(d){return d.cert})],['Invoices',DS.filter(function(d){return d.type=='invoice'})],['Quotes',DS.filter(function(d){return d.type=='quote'})],['Reports',DS.filter(function(d){return d.type=='report'&&!d.cert})]];
   P.innerHTML=grp.map(function(g){return '<div class="pcard"><h2>'+g[0]+'</h2>'+(g[1].map(drow).join('')||'<p class="pmut">None yet.</p>')+'</div>'}).join('')}
- if(TAB=='pay'){var due2=DS.reduce(function(a,d){return a+owe(d)},0);
-  P.innerHTML='<div class="pcard"><small class="pmut">Outstanding balance</small><div class="pbig">'+GBP(due2)+'</div>'+payBtns(DS)+'</div><div class="pcard"><h2>Payments received</h2>'+(PY.map(function(p){var net=(+p.amount||0)-(+p.refunded_amount||0);return '<div class="prow" style="cursor:default"><div><b>'+GBP(p.amount)+'</b><small>'+DT(p.paid_at)+(p.method?' \u00b7 '+E(p.method):'')+'</small></div>'+(p.status=='refunded'?'<span class="pill">Refunded</span>':p.status=='part_refunded'?'<span class="pill amb">'+GBP(p.refunded_amount)+' refunded</span>':'<span class="pill ok">Received</span>')+'</div>'}).join('')||'<p class="pmut">No payments yet.</p>')+'</div>'}
+ if(TAB=='pay'){var due2=dues().reduce(function(a,x){return a+x.amt},0);
+  P.innerHTML='<div class="pcard"><small class="pmut">Outstanding balance</small><div class="pbig">'+GBP(due2)+'</div>'+dueHtml()+'</div><div class="pcard"><h2>Payments received</h2>'+(PY.map(function(p){var net=(+p.amount||0)-(+p.refunded_amount||0);return '<div class="prow" style="cursor:default"><div><b>'+GBP(p.amount)+'</b><small>'+DT(p.paid_at)+(p.method?' \u00b7 '+E(p.method):'')+'</small></div>'+(p.status=='refunded'?'<span class="pill">Refunded</span>':p.status=='part_refunded'?'<span class="pill amb">'+GBP(p.refunded_amount)+' refunded</span>':'<span class="pill ok">Received</span>')+'</div>'}).join('')||'<p class="pmut">No payments yet.</p>')+'</div>'}
  if(TAB=='acct')P.innerHTML=(D.customers||[]).map(function(c){return '<div class="pcard"><h2>My details</h2><dl class="pdl"><dt>Name</dt><dd>'+E(c.name)+'</dd><dt>Email</dt><dd>'+E(c.email)+'</dd><dt>Phone</dt><dd>'+E(c.phone||'-')+'</dd><dt>Address</dt><dd>'+E([c.address,c.postcode].filter(Boolean).join(', ')||'-')+'</dd>'+(c.ref?'<dt>Customer ref</dt><dd>'+E(c.ref)+'</dd>':'')+'</dl></div>'}).join('')+
   ((D.properties||[]).length?'<div class="pcard"><h2>My properties</h2>'+D.properties.map(function(p){return '<div class="prow" style="cursor:default"><div><b>'+E(p.address)+'</b><small>'+E(p.postcode||'')+'</small></div></div>'}).join('')+'</div>':'')+
-  '<div class="pcard"><p class="pmut">To change your details, call <a href="'+TEL+'">'+PHONE+'</a> or email <a href="mailto:info@southwarkheating.com">info@southwarkheating.com</a>.</p><button class="btn btn-dark" id="cpw">Change password</button></div>';
- on('cpw',function(){nav({p:'pass'})});
+  applCard()+'<div class="pcard"><p class="pmut">To change your details, call <a href="'+TEL+'">'+PHONE+'</a> or email <a href="mailto:info@southwarkheating.com">info@southwarkheating.com</a>.</p><button class="btn btn-dark" id="cpw">Change password</button></div>';
+ on('cpw',function(){nav({p:'pass'})});on('apadd',function(){nav({p:'appl',id:''})});on('apnext',function(){nav({p:'appl',id:''})});
  [].forEach.call(P.querySelectorAll('[data-j]'),function(b){b.addEventListener('click',function(){nav({p:'job',id:b.dataset.j})})})}
+
+
+/* ---------- V6: everything the customer owes, with a pay button for each ---------- */
+function dues(){var DS=D.documents||[],out=[];
+ DS.forEach(function(d){var o=owe(d);if(o>0)out.push({d:d,amt:o,lbl:(d.number?'Invoice '+d.number:'Invoice'),paid:+d.paid||0})});
+ (D.jobs||[]).forEach(function(j){if(/cancel/i.test(j.status||'')||/^(paid|refunded|cancelled)$/i.test(j.pay_status||''))return;
+  var ls=(D.links||[]).filter(function(l){return l.job_id==j.id&&!l.document_id});if(!ls.length)return;
+  if(DS.some(function(d){return d.job_id==j.id&&d.type=='invoice'&&!/cancel/i.test(d.status||'')}))return;
+  var paid=(D.payments||[]).filter(function(p){return p.job_id==j.id}).reduce(function(a,p){return a+(+p.amount||0)-(+p.refunded_amount||0)},0),left=Math.max(0,(+j.price||0)-paid);
+  var l=ls.filter(function(x){return x.kind!='deposit'})[0]||ls[0];if(left>0)out.push({j:j,amt:left,lbl:j.job_type||'Job',paid:paid,url:l.url,lamt:+l.amount||left})});
+ return out}
+function dueHtml(){return dues().map(function(x){var b=x.paid>0?'Pay the balance':'Pay in full';
+ return '<div class="prow" style="cursor:default;flex-wrap:wrap"><div><b>'+E(x.lbl)+'</b><small>'+(x.paid>0?GBP(x.paid)+' paid · ':'')+GBP(x.amt)+' left to pay</small></div>'+
+  (x.d?'<button type="button" class="btn btn-red btn-sm" data-pay="'+E(x.d.id)+'">'+b+' '+GBP(x.amt)+'</button>':'<a class="btn btn-red btn-sm" href="'+E(x.url)+'" target="_blank" rel="noopener">'+b+' '+GBP(x.lamt)+'</a>')+'</div>'}).join('')}
+function hl(show){[].forEach.call(document.querySelectorAll('.hlog'),function(a){a.style.display=show?'':'none'});[].forEach.call(document.querySelectorAll('.navlg'),function(a){a.textContent=show?'Customer Login':'My Account'})}
 
 function uniqAppl(){var seen={},o=[];(D.appliances||[]).slice().sort(function(a,b){return String(b.checked)>String(a.checked)?1:-1}).forEach(function(a){var k=[a.make,a.model,a.type,a.location].join('|').toLowerCase();if(!seen[k]){seen[k]=1;o.push(a)}});return o}
 
@@ -287,16 +306,81 @@ function job(id){var j=(D.jobs||[]).filter(function(x){return x.id==id})[0];if(!
  (py.length?'<div class="pcard"><h2>Payments</h2>'+py.map(function(p){return '<div class="prow" style="cursor:default"><div><b>'+GBP(p.amount)+'</b><small>'+DT(p.paid_at)+'</small></div><span class="pill ok">Received</span></div>'}).join('')+'</div>':'');
  on('bk',function(){back(function(){render()})})}
 
-async function logout(){try{await sb.auth.signOut()}catch(e){}D=null;URLS={};TAB='home';DEPTH=0;try{sessionStorage.removeItem('sh_wel')}catch(e){}history.replaceState(null,'',location.pathname);signIn('You\u2019ve been logged out.','pok')}
+
+/* ---------- quotes & invoices: open, Proceed, Pay Now ---------- */
+function qacc(d){return d.type=='quote'&&(!!d.accepted||/accepted/i.test(d.status||''))}
+function qrow(d){var o=owe(d),st=d.type=='invoice'?(o>0?'<span class="pill due">'+GBP(o)+' to pay</span>':'<span class="pill ok">Paid</span>'):qacc(d)?'<span class="pill ok">Accepted</span>':/declin|cancel/i.test(d.status||'')?'<span class="pill">'+E(d.status)+'</span>':'<span class="pill on">Open</span>';
+ return '<button type="button" class="prow" data-d="'+E(d.id)+'"><div><b>'+E(dlabel(d))+'</b>'+(d.number?' <small style="display:inline">'+E(d.number)+'</small>':'')+'<small>'+DT(d.approved_at||d.sent_at||d.created_at)+' \u00b7 Tap to view</small></div><div style="text-align:right"><b>'+GBP(d.total)+'</b><br>'+st+'</div></button>'}
+async function payLinks(id){var t='';try{var s=await sb.auth.getSession();t=(s&&s.data&&s.data.session&&s.data.session.access_token)||''}catch(e){}
+ if(!t)return{err:'Please log in again.'};var r,j={};
+ try{r=await fetch(SB_URL+'/functions/v1/create-payment-link',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+t,apikey:SB_KEY},body:JSON.stringify({portal:true,document_id:id})})}catch(e){return{err:'Could not connect. Check your signal and try again.'}}
+ try{j=await r.json()}catch(e){}if(!r.ok||j.error)return{err:j.error||('Online payment isn\u2019t available right now. Please call us on '+PHONE+'.')};return j}
+function plbl(l,res){return l.kind=='deposit'?'Pay '+GBP(l.amount)+(res.deposit_type=='first_hour'?' first-hour deposit':' deposit'):l.kind=='balance'?'Pay the balance ('+GBP(l.amount)+')':'Pay in full ('+GBP(l.amount)+')'}
+async function payGo(d,b,auto){var box=document.getElementById('dpay');busy(b,'Getting secure payment options\u2026');var res=await payLinks(d.id);free(b);
+ if(res.err){box.innerHTML=msg(res.err);return}
+ if(res.nothing_due){box.innerHTML=msg('Nothing left to pay - thank you.','pok');if(b)b.style.display='none';return}
+ var L=(res.links||[]).slice().sort(function(a,c){return a.kind=='deposit'?1:c.kind=='deposit'?-1:0});if(!L.length){box.innerHTML=msg('Online payment isn\u2019t available right now. Please call us on '+PHONE+'.');return}
+ if(b)b.style.display='none';
+ box.innerHTML='<h2 style="margin-top:16px">How would you like to pay?</h2>'+L.map(function(l){return '<a class="btn '+(l.kind=='deposit'?'btn-dark':'btn-red')+'" style="display:block;text-align:center" href="'+E(l.url)+'">'+E(plbl(l,res))+'</a>'}).join('')+
+  (L.some(function(l){return l.kind=='deposit'})?'<p class="pmut" style="margin-top:8px">If you pay the deposit, the rest is due when the work is complete.</p>':'')+'<p class="pmut" style="margin-top:8px">Payments are taken securely by Stripe.</p>';
+ if(auto&&L.length==1)location.href=L[0].url}
+function doc(id,pay){if(!D)return dash();var d=(D.documents||[]).filter(function(x){return x.id==id})[0];if(!d)return render();top();
+ var u=d.pdf&&URLS[d.pdf],o=owe(d),isQ=d.type=='quote',acc=qacc(d),shut=/declin|cancel/i.test(d.status||''),it=d.items||[];
+ V.innerHTML='<button class="pback" id="bk">\u2039 Back</button><div class="pcard"><div class="ptop" style="margin:0 0 8px"><h1 style="font-size:1.3rem">'+E(dlabel(d))+(d.number?' '+E(d.number):'')+'</h1>'+(isQ?(acc?'<span class="pill ok">Accepted</span>':''):(o>0?'<span class="pill due">To pay</span>':'<span class="pill ok">Paid</span>'))+'</div>'+
+ '<dl class="pdl"><dt>Date</dt><dd>'+DT(d.approved_at||d.sent_at||d.created_at)+'</dd></dl>'+
+ (it.length?'<div style="margin-top:12px">'+it.map(function(x){var q=+x.q||0,p=+x.p||0;return '<div class="prow" style="cursor:default"><div><b style="font-weight:600">'+E(x.d)+'</b><small>'+(q!=1?E(x.q)+' \u00d7 '+GBP(p):'')+'</small></div><b>'+GBP(q*p)+'</b></div>'}).join('')+'</div>':'')+
+ '<dl class="pdl" style="margin-top:12px"><dt>Total</dt><dd>'+GBP(d.total)+'</dd>'+(!isQ?'<dt>Paid</dt><dd>'+GBP(d.paid)+'</dd><dt>Left to pay</dt><dd>'+GBP(o)+'</dd>':'')+'</dl>'+
+ '<div id="pmsg"></div>'+
+ (isQ?(shut?'<p class="pnote" style="margin-top:16px">This quote is no longer open. Call us on <a href="'+TEL+'">'+PHONE+'</a> if you\u2019d like to go ahead.</p>':
+   acc?'<p class="pok" style="margin-top:16px">You accepted this quote'+(d.accepted?' on '+DT(d.accepted):'')+'.</p><button class="btn btn-red big" style="display:block;width:100%" id="dgo">Pay Now</button>':
+   '<p class="pmut" style="margin-top:16px">Happy to go ahead? Tap Proceed to accept this quote and choose how to pay.</p><button class="btn btn-red big" style="display:block;width:100%" id="dgo">Proceed</button>'):
+  (o>0&&!/cancel/i.test(d.status||'')?'<button class="btn btn-red big" style="display:block;width:100%;margin-top:16px" id="dgo">Pay Now</button>':''))+
+ '<div id="dpay"></div>'+(u?'<a class="btn btn-light" style="display:block;text-align:center;border:1px solid var(--line);margin-top:12px" href="'+E(u)+'" target="_blank" rel="noopener">View PDF</a>':'')+'</div>'+
+ '<p class="pmut pc">Questions? Call <a href="'+TEL+'">'+PHONE+'</a></p>';
+ on('bk',function(){back(function(){render()})});
+ on('dgo',async function(){var b=document.getElementById('dgo');
+  if(isQ&&!acc){busy(b,'Accepting quote\u2026');var r;try{r=await sb.rpc('portal_accept_quote',{did:d.id})}catch(e){r={error:e}}
+   if(r.error||!r.data){free(b);document.getElementById('pmsg').innerHTML=msg('Sorry, this quote couldn\u2019t be accepted online. Please call us on '+PHONE+'.');return}
+   d.accepted=new Date().toISOString();d.status='Accepted';acc=true;document.getElementById('pmsg').innerHTML=msg('Thank you - your quote is accepted.','pok')}
+  payGo(d,b,!isQ)});
+ if(pay){history.replaceState({p:'doc',id:id},'',location.pathname);var pb=document.getElementById('dgo');if(pb)pb.click()}}
+
+/* ---------- my appliances (free text - saved to the customer record for the engineer) ---------- */
+function applCard(){var A=D.my_appliances||[];return '<div class="pcard"><h2>My appliances</h2><p class="pmut">Tell us about your boiler and other gas appliances before your visit. Fill in what you know - leave anything else blank.</p>'+
+ A.map(function(a){return '<button type="button" class="prow" data-ap="'+E(a.id)+'"><div><b>'+E([a.make,a.model].filter(Boolean).join(' ')||a.type||'Appliance')+'</b><small>'+E([a.type,a.loc].filter(Boolean).join(' \u00b7 ')||'Tap to edit')+'</small></div><span class="chev">\u203a</span></button>'}).join('')+
+ (A.length<20?'<button class="btn btn-dark" type="button" id="apadd" style="display:block;width:100%;margin-top:12px">+ Add an appliance</button>':'<p class="pmut">You\u2019ve added the maximum of 20 appliances.</p>')+'</div>'}
+function applForm(id){var a=(D&&D.my_appliances||[]).filter(function(x){return x.id==id})[0]||{};if(id&&!a.id)return render();top();
+ var F=[['type','Type of appliance','e.g. Boiler, gas fire, cooker'],['make','Make','e.g. Worcester Bosch'],['model','Model','e.g. Greenstar 30i'],['loc','Where is it?','e.g. Kitchen cupboard'],['gc','GC number','Optional - on the data badge'],['serial','Serial number','Optional']];
+ V.innerHTML=backBtn()+'<div class="pcard"><h1>'+(a.id?'Edit appliance':'Add an appliance')+'</h1><p class="pmut">Only fill in what you know.</p><div id="pmsg"></div><form id="fap" class="pf" novalidate>'+
+ F.map(function(f){return '<label for="ap_'+f[0]+'">'+f[1]+'</label><input id="ap_'+f[0]+'" placeholder="'+E(f[2])+'" value="'+E(a[f[0]]||'')+'"'+(f[0]=='gc'||f[0]=='serial'?' autocapitalize="characters"':'')+'>'}).join('')+
+ '<label for="ap_notes">Anything else we should know?</label><textarea id="ap_notes">'+E(a.notes||'')+'</textarea><button class="btn btn-red" type="submit">Save appliance</button></form>'+
+ (a.id?'<div class="plinks"><button type="button" id="apdel">Remove this appliance</button></div>':'')+'</div>';
+ var done=async function(t){try{await load()}catch(e){}PNOTE=t;TAB='acct';back(function(){render()})};
+ on('bkx',function(){back(function(){render()})});
+ on('apdel',async function(){if(!confirm('Remove this appliance?'))return;var r;try{r=await sb.rpc('portal_appliance_delete',{aid:a.id})}catch(e){r={error:e}}if(r.error||!r.data)return fail('Sorry, that couldn\u2019t be removed. Please try again.');done('Appliance removed.')});
+ onSub('fap',async function(f){var b=f.querySelector('button'),x={id:a.id||''};F.concat([['notes']]).forEach(function(k){x[k[0]]=v('ap_'+k[0])});
+  if(!(x.type||x.make||x.model||x.loc))return fail('Please fill in at least the type, make, model or where it is.','ap_type');busy(b,'Saving\u2026');
+  var r;try{r=await sb.rpc('portal_appliance_save',{a:x})}catch(e){r={error:e}}
+  if(r.error){free(b);return fail(/too many/i.test(r.error.message||'')?'You can add up to 20 appliances.':'Sorry, that couldn\u2019t be saved. Please try again.')}
+  done('Appliance saved - thank you.')})}
+
+/* ---------- invite link from the engineer: ?invite=<token> ---------- */
+async function invite(){V.innerHTML='<p class="pmut pc">Loading\u2026</p>';var r;try{r=await sb.rpc('portal_invite_info',{tok:INV})}catch(e){r={error:e}}
+ history.replaceState(null,'',location.pathname);var i=r&&!r.error&&r.data;
+ if(!i)return signUp('This sign-up link has expired or was already used. You can still create your account below - please use the email address you gave us.');
+ if(i.has_account){signIn('You already have an account'+(i.email?' for '+i.email:'')+'. Please log in.','pok');var e=document.getElementById('em');if(e&&i.email)e.value=i.email;return}
+ INVD={tok:INV,name:i.name||'',email:i.email||''};signUp()}
+
+async function logout(){try{await sb.auth.signOut()}catch(e){}hl(true);D=null;URLS={};TAB='home';DEPTH=0;try{sessionStorage.removeItem('sh_wel')}catch(e){}history.replaceState(null,'',location.pathname);signIn('You\u2019ve been logged out.','pok')}
 
 /* ---------- start ---------- */
 var started=false;
 sb.auth.onAuthStateChange(function(ev,s){setTimeout(function(){
  if(ev==='PASSWORD_RECOVERY'){return newPass()}
  if(REC)return;
- if(ev==='SIGNED_OUT'){if(!started){started=true;signIn()}return}
- if(s&&(ev==='INITIAL_SESSION'||ev==='SIGNED_IN')){if(started&&D)return;started=true;var conf=/type=signup|type=email/.test(H0);if(location.hash)history.replaceState(null,'',location.pathname);dash(conf?'Your email is confirmed - welcome!':'')}
- else if(!s&&ev==='INITIAL_SESSION'){started=true;var er=(H0.match(/error_description=([^&]+)/)||[])[1];signIn(er?'That link has expired or was already used. Please log in, or request a new link.':'')}
+ if(ev==='SIGNED_OUT'){if(!started){started=true;if(INV)return invite();signIn()}return}
+ if(s&&(ev==='INITIAL_SESSION'||ev==='SIGNED_IN')){if(started&&D)return;started=true;if(INV){INV='';history.replaceState(null,'',location.pathname)}var conf=/type=signup|type=email/.test(H0);if(location.hash)history.replaceState(null,'',location.pathname);dash(conf?'Your email is confirmed - welcome!':'')}
+ else if(!s&&ev==='INITIAL_SESSION'){started=true;if(INV)return invite();var er=(H0.match(/error_description=([^&]+)/)||[])[1];signIn(er?'That link has expired or was already used. Please log in, or request a new link.':'')}
 },0)});
 if(REC)setTimeout(function(){if(REC&&!document.getElementById('fnp'))newPass()},2500);
 })();
