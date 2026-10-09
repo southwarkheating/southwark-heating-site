@@ -1,5 +1,6 @@
 import CAT from './boiler-data.js';
 import * as C from './quote-core.js';
+import { icon } from './boiler-icons.js';
 
 const API = 'https://ylyasshhvuhhpmpotera.supabase.co/functions/v1/boiler-order'; // V6: Supabase function - re-prices the order, creates the job in the app and the Stripe link
 const FORM = 'https://formspree.io/f/mdekrqqj'; // your existing website form
@@ -7,10 +8,13 @@ const KEY = 'sh_boiler_journey_v2';
 const root = document.getElementById('sj');
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const money = C.gbp;
+const CONSENT_TXT = 'I request Southwark Heating to begin arranging or providing my boiler installation before the end of any applicable 14-day cancellation period.';
+const CONSENT_NOTE = 'By selecting this option, you are requesting that we begin work on arranging and/or providing your installation before the end of any applicable cancellation period.';
+const CONSENT_ERR = 'Please confirm that you request us to begin arranging or providing your installation before the end of any applicable cancellation period.';
 
 // ---------- state ----------
 const newId = () => { try { return crypto.randomUUID(); } catch (e) { return 'xxxxxxxx-xxxx-4xxx-8xxx-xxxxxxxxxxxx'.replace(/x/g, () => (Math.random() * 16 | 0).toString(16)); } };
-const fresh = () => ({ oid: newId(), step: 'start', a: {}, product: null, extras: {}, date: null, cust: {}, pay: 'full', rental: '', notes: '', promo: '', terms: false, marketing: false, done: null });
+const fresh = () => ({ oid: newId(), step: 'start', a: {}, product: null, extras: {}, date: null, cust: {}, pay: 'full', rental: '', notes: '', promo: '', consent14: false, curBoiler: '', terms: false, marketing: false, done: null });
 let S = load();
 function load() { try { const x = Object.assign(fresh(), JSON.parse(sessionStorage.getItem(KEY) || '{}')); if (!x.oid) x.oid = newId(); return x; } catch (e) { return fresh(); } }
 function save() { try { sessionStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* private mode */ } }
@@ -19,7 +23,7 @@ function save() { try { sessionStorage.setItem(KEY, JSON.stringify(S)); } catch 
 const Q = [
   { k: 'current_type', title: 'What kind of boiler do you have now?', help: 'If you have a hot water tank (cylinder), it is a standard or system boiler. A combi has no tank.', opts: [['combi', 'Combi'], ['standard', 'Standard (regular)'], ['system', 'System'], ['back', 'Back boiler'], ['unsure', 'I am not sure']] },
   { k: 'fuel', title: 'What does your boiler run on?', opts: [['gas', 'Mains gas'], ['lpg', 'LPG'], ['oil', 'Oil']] },
-  { k: 'convert', title: 'Do you want to switch to a combi boiler?', help: 'We remove your hot water cylinder and tanks and alter the pipework. The cost of this is shown clearly in your price.', opts: [['yes', 'Yes, switch to a combi'], ['no', 'No, keep my current type']], show: (a) => ['standard', 'system'].includes(a.current_type) },
+  { k: 'convert', title: 'Do you want to switch to a combi boiler?', help: 'We remove your hot water cylinder and tanks and alter the pipework. The cost of this is shown clearly in your price.', opts: [['yes', 'Yes, switch to a combi', 'No hot water tank needed. Extra pipework cost shown in your price'], ['no', 'No, keep my tank and replace like for like', 'We show boilers of the same type as yours']], show: (a) => ['standard', 'system'].includes(a.current_type) },
   { k: 'move', title: 'Do you want the new boiler in a different place?', help: 'Most people keep it where it is, which is the lowest price.', opts: [['no', 'No, same place'], ['yes', 'Yes, move it']] },
   { k: 'move_to', title: 'Where do you want the new boiler?', help: 'Moving costs more. The price is added to your installation.', show: (a) => a.move === 'yes', dyn: () => CAT.moves.map((m) => [m.id, m.label, m.price != null ? '+' + money(m.price) : 'We will price this for you']) },
   { k: 'property', title: 'Which of these best describes your home?', opts: [['detached', 'Detached'], ['semi', 'Semi-detached'], ['terraced', 'Terraced'], ['flat', 'Flat'], ['bungalow', 'Bungalow']] },
@@ -122,9 +126,12 @@ function scrQuestion(k) {
     body = `<form id="sj-pc" novalidate><label for="pc">Postcode</label><input id="pc" name="postcode" autocomplete="postal-code" autocapitalize="characters" inputmode="text" value="${esc(cur || '')}" placeholder="e.g. SE16 7SZ"><p class="sj-err" id="pc-e" role="alert"></p><button class="sj-btn" type="submit">Show my boilers</button></form>`;
   } else if (q.multi) {
     const sel = Array.isArray(cur) ? cur : [];
-    body = `<div class="sj-list">${opts.map(([v, l]) => `<button type="button" class="sj-opt ${sel.includes(v) ? 'on' : ''}" aria-pressed="${sel.includes(v)}" data-multi="${esc(v)}"><span>${esc(l)}</span></button>`).join('')}</div><button class="sj-btn" data-act="multi-next">Continue</button>`;
+    body = `<div class="sj-list">${opts.map(([v, l]) => { const ic = icon(k, v); return `<button type="button" class="sj-opt ${ic ? 'sj-hasic' : ''} ${sel.includes(v) ? 'on' : ''}" aria-pressed="${sel.includes(v)}" data-multi="${esc(v)}">${ic}<span>${esc(l)}</span></button>`; }).join('')}</div><button class="sj-btn" data-act="multi-next">Continue</button>`;
   } else {
-    body = `<div class="${q.grid ? 'sj-grid' : 'sj-list'}">${opts.map(([v, l, sub]) => `<button type="button" class="sj-opt ${String(cur) === String(v) ? 'on' : ''}" data-pick="${esc(v)}"><span>${esc(l)}</span>${sub ? `<em>${esc(sub)}</em>` : ''}</button>`).join('')}</div>`;
+    const qic = icon(k, '*');   // one picture for the whole question (bedrooms, bathrooms, radiators...)
+    const per = !qic && opts.some(([v]) => icon(k, v));
+    const sq = qic && !q.grid ? '' : '';
+    body = `${qic ? `<div class="sj-qic">${qic}</div>` : ''}<div class="${q.grid ? 'sj-grid' : 'sj-list'}${per ? ' sj-icgrid' : ''}">${opts.map(([v, l, sub]) => `<button type="button" class="sj-opt ${per ? 'sj-hasic' : ''} ${String(cur) === String(v) ? 'on' : ''}" data-pick="${esc(v)}">${per ? icon(k, v) : ''}<span>${esc(l)}</span>${sub ? `<em>${esc(sub)}</em>` : ''}</button>`).join('')}</div>${sq}`;
   }
   return `<div class="sj-card">${header(esc(q.title), q.help ? esc(q.help) : '', true)}${body}</div>`;
 }
@@ -165,7 +172,8 @@ function scrResults() {
   const SHOW = 6;
   const cards = r.options.map((o, idx) => {
     const p = o.product;
-    const specs = [p.ch_kw ? ['Heating output', p.ch_kw + ' kW'] : null, ['Hot water flow', 'about ' + p.dhw_flow_lpm + ' litres/min'], p.warranty_years ? ['Warranty', p.warranty_years + ' years'] : null, p.efficiency_pct ? ['Efficiency', 'ErP class ' + (p.erp || '') + ', ' + p.efficiency_pct + '%'] : null, ['Type', 'Combi (no tank)']].filter(Boolean)
+    const tname = { combi: 'Combi (no tank)', system: 'System (uses your hot water cylinder)', regular: 'Regular (uses your cylinder and loft tank)' }[p.type] || p.type;
+    const specs = [p.ch_kw ? ['Heating output', p.ch_kw + ' kW'] : null, p.dhw_flow_lpm ? ['Hot water flow', 'about ' + p.dhw_flow_lpm + ' litres/min'] : null, p.warranty_years ? ['Warranty', p.warranty_years + ' years'] : null, p.efficiency_pct ? ['Efficiency', 'ErP class ' + (p.erp || '') + ', ' + p.efficiency_pct + '%'] : null, ['Type', tname]].filter(Boolean)
       .map(([a, b]) => `<div><dt>${a}</dt><dd>${esc(b)}</dd></div>`).join('');
     return `<article class="sj-prod ${o.badges[0] === 'Best match' ? 'best' : ''}"${idx >= SHOW && !S.showAll ? ' hidden' : ''}>
       ${o.badges.length ? `<p class="sj-badges">${o.badges.map((b) => `<span class="sj-tag">${esc(b)}</span>`).join('')}</p>` : ''}
@@ -177,7 +185,7 @@ function scrResults() {
   }).join('');
   const notes = r.notes.length ? `<div class="sj-alert"><b>Good to know</b>${r.notes.map((n) => `<p>${esc(n)}</p>`).join('')}</div>` : '';
   const deal = dealLive() ? `<div class="sj-dealbar"><span class="sj-dealbadge">SAVE<br>£100</span><p><b>Winter deal:</b> book and install by 31 December 2026 and save £100. Enter code <b>SOUTHWARK100</b> when you review your order.</p></div>` : '';
-  return `<div class="sj-card">${header('Boilers that suit your home', 'These are sized for the answers you gave. Prices are fixed and include fitting.', true)}${deal}${notes}${cards || '<p>No boilers found.</p>'}${dealLive() ? '<p class="sj-note">*£100 off with code SOUTHWARK100. Code must be entered at checkout and the installation must take place on or before 31 December 2026. One code per order.</p>' : ''}${r.options.length > SHOW && !S.showAll ? `<button type="button" class="sj-btn sj-ghost" data-act="show-all">Show all ${r.options.length} boilers</button>` : ''}
+  return `<div class="sj-card">${header('Boilers that suit your home', 'These are sized for the answers you gave. Prices are fixed and include fitting.', true)}${deal}${notes}<div class="sj-curb"><label for="cb">Your current boiler (optional)</label><input id="cb" maxlength="80" autocomplete="off" placeholder="Make and model, e.g. Worcester Greenstar 30i" value="${esc(S.curBoiler || '')}"></div>${cards || '<p>No boilers found.</p>'}${dealLive() ? '<p class="sj-note">*£100 off with code SOUTHWARK100. Code must be entered at checkout and the installation must take place on or before 31 December 2026. One code per order.</p>' : ''}${r.options.length > SHOW && !S.showAll ? `<button type="button" class="sj-btn sj-ghost" data-act="show-all">Show all ${r.options.length} boilers</button>` : ''}
   <div class="sj-save"><details><summary>Save this quote for later</summary><form id="sj-save" novalidate><label for="se">Your email</label><input id="se" type="email" autocomplete="email" inputmode="email"><p class="sj-err" id="se-e" role="alert"></p><button class="sj-btn sj-ghost" type="submit">Email me this quote</button></form></details></div>
   <p class="sj-note">Need to talk first? Call <a href="tel:+44${CAT.settings.phone.replace(/^0/, '').replace(/\s/g, '')}">${esc(CAT.settings.phone)}</a>.</p></div>`;
 }
@@ -269,6 +277,7 @@ function scrReview() {
   ${live ? payBlock : '<div class="sj-alert"><b>Book now, pay when we confirm</b><p>Online card payment is being switched on. Send your booking request and we will confirm your date and take payment with you directly.</p></div>'}
   <label class="sj-check"><input type="checkbox" id="terms" ${S.terms ? 'checked' : ''}> <span>I agree to the <a href="terms" target="_blank" rel="noopener">Terms &amp; Conditions</a> and <a href="privacy" target="_blank" rel="noopener">Privacy Policy</a>.</span></label>
   <label class="sj-check"><input type="checkbox" id="mkt" ${S.marketing ? 'checked' : ''}> <span>I am happy to receive occasional helpful reminders from Southwark Heating (optional).</span></label>
+  <div class="sj-consent"><label class="sj-check"><input type="checkbox" id="c14" ${S.consent14 ? 'checked' : ''}> <span><b>${esc(CONSENT_TXT)}</b></span></label><p class="sj-note">${esc(CONSENT_NOTE)}</p></div>
   <p class="sj-err" id="rv-e" role="alert"></p>
   <button class="sj-btn" id="sj-go">${live ? 'Pay ' + (S.pay === 'deposit' && canDep ? money(dep) : money(o.total)) + ' securely' : 'Send my booking request'}</button>
   <p class="sj-note">${live ? 'Secure payment by Stripe. We never see your card details.' : 'No payment is taken on this page yet.'}</p></div>`;
@@ -321,6 +330,8 @@ function bind() {
   if (dt) dt.addEventListener('submit', (e) => { e.preventDefault(); if (submitDetails()) { sendLead(); go('review'); } });
   root.querySelectorAll('input[name="pay"]').forEach((r) => r.addEventListener('change', () => { S.pay = r.value; save(); keepScroll(render); }));
   const t = root.querySelector('#terms'); if (t) t.addEventListener('change', () => { S.terms = t.checked; save(); });
+  const cb = root.querySelector('#cb'); if (cb) cb.addEventListener('input', () => { S.curBoiler = cb.value.trim().slice(0, 80); save(); });
+  const c14 = root.querySelector('#c14'); if (c14) c14.addEventListener('change', () => { S.consent14 = c14.checked; save(); if (c14.checked) { const e = root.querySelector('#rv-e'); if (e && e.textContent === CONSENT_ERR) e.textContent = ''; } });
   const mk = root.querySelector('#mkt'); if (mk) mk.addEventListener('change', () => { S.marketing = mk.checked; save(); });
   const go1 = root.querySelector('#sj-go'); if (go1) go1.addEventListener('click', placeOrder);
   const pf = root.querySelector('#sj-pf');
@@ -375,7 +386,7 @@ async function sendForm(f) {
 // ---------- V6: tell Southwark Heating as soon as the details are in (before any payment) ----------
 function orderBody(action) {
   const c = S.cust, ad = c.addr || {};
-  return { action, order_id: S.oid, answers: S.a, product_id: S.product, extras: S.extras, date: S.date, customer: { first: c.first, last: c.last, email: c.email, phone: c.phone }, address: ad, rental: S.rental, notes: S.notes, pay: S.pay, promo: currentOrder().promo || '', consent: { terms: !!S.terms, marketing: !!S.marketing } };
+  return { action, order_id: S.oid, answers: S.a, product_id: S.product, extras: S.extras, date: S.date, customer: { first: c.first, last: c.last, email: c.email, phone: c.phone }, address: ad, rental: S.rental, notes: S.notes, pay: S.pay, promo: currentOrder().promo || '', current_boiler: S.curBoiler || '', consent: { terms: !!S.terms, marketing: !!S.marketing, cancellation_request: !!S.consent14, cancellation_text: CONSENT_TXT } };
 }
 async function callApi(action) {
   const r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(orderBody(action)) });
@@ -398,6 +409,7 @@ async function placeOrder() {
   const o = currentOrder();
   if (!o.ok) { er.textContent = o.error; return; }
   if (!S.terms) { er.textContent = 'Please tick the box to accept the Terms & Conditions.'; return; }
+  if (!S.consent14) { er.textContent = CONSENT_ERR; const cb = root.querySelector('#c14'); if (cb) cb.focus(); return; }
   er.textContent = ''; btn.disabled = true; btn.textContent = 'Please wait...';
   const c = S.cust, ad = c.addr;
   const dateText = new Date(S.date + 'T00:00:00Z').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });

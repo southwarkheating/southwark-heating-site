@@ -62,11 +62,12 @@ export const REASONS = {
 export function assess(a) {
   const why = [], notes = [];
   if (a.fuel && a.fuel !== 'gas') why.push('fuel');
-  if (a.current_type === 'back' || a.current_type === 'unsure') why.push('current_type');
-  if (['standard', 'system'].includes(a.current_type) && a.convert === 'no') why.push('keep_tank');
+  if (a.current_type === 'back') why.push('current_type');
   if (a.move === 'yes' && a.move_to === 'other') why.push('move_other');
-  if (a.bathrooms >= 3 || a.baths >= 2 || a.bedrooms >= 5) why.push('hot_water');
-  if (['14-16', '17+'].includes(a.radiators)) why.push('heat_size');
+  if (a.current_type === 'unsure') notes.push('You were not sure what boiler you have. We will confirm your current set-up before the day, and agree anything different with you first.');
+  if (['standard', 'system'].includes(a.current_type) && a.convert === 'no') notes.push('We have chosen a replacement of the same type, so your existing hot water cylinder stays. We check its condition on the day.');
+  if (a.current_type === 'combi' && (a.bathrooms >= 3 || a.baths >= 2 || a.bedrooms >= 5)) notes.push('With a busy household we have shown the boilers with the strongest hot water flow.');
+  if (['14-16', '17+'].includes(a.radiators)) notes.push('With this many radiators we have shown the higher-output boilers. We confirm the heating output on site.');
   if (a.flue_outlet === 'roof') notes.push('Your flue comes out through the roof. We will check the route and confirm any extra flue with you before work starts.');
   else if (a.flue_outlet === 'unknown' || a.flue_distance === 'unknown') notes.push('We will check where your flue can go before the day and tell you if anything extra is needed.');
   if (a.flue_distance === '3+') notes.push('A longer flue run may need an extension. We will confirm the cost with you before any work starts.');
@@ -90,26 +91,43 @@ export function basePrice(cat, a, p) {
 
 const homeWords = { detached: 'detached home', semi: 'semi-detached home', terraced: 'terraced home', flat: 'flat', bungalow: 'bungalow' };
 
+export function wantType(a) {
+  if (['standard', 'system'].includes(a.current_type)) { if (a.convert === 'no') return a.current_type === 'system' ? 'system' : 'regular'; return 'combi'; }
+  return 'combi';
+}
+const MIN_KW = { '0-5': 15, '6-9': 18, '10-13': 24, '14-16': 30, '17+': 35 };   // GUESSED sizing rule - owner to confirm
 export function recommend(cat, a) {
   const as = assess(a);
   if (as.route !== 'ok') return { ...as, options: [] };
+  const t = wantType(a);
+  const big = a.bathrooms >= 3 || a.baths >= 2 || a.bedrooms >= 5;
   const need30 = a.bathrooms >= 2 || a.bedrooms >= 4 || a.radiators === '10-13';
-  const needFlow = need30 ? 12 : 9.5;   // a 24 kW combi gives about 9.8 litres/min - right for a 1-bathroom home
-  const list = cat.products.filter((p) => p.type === 'combi' && p.fuel === 'gas' && p.dhw_flow_lpm >= needFlow && p.availability !== 'unavailable');
+  const needFlow = big ? 14 : need30 ? 12 : 9.5;   // a 24 kW combi gives about 9.8 litres/min - right for a 1-bathroom home
+  const minKw = Math.max(MIN_KW[a.radiators] || 15, a.bedrooms >= 4 ? 24 : 0, big ? 30 : 0);
+  const maxKw = (a.property === 'flat' || a.bedrooms <= 2) && ['0-5', '6-9'].includes(a.radiators) && !big ? 30 : 99;
+  let list = cat.products.filter((p) => p.type === t && p.fuel === 'gas' && p.availability !== 'unavailable' && (t === 'combi' ? p.dhw_flow_lpm >= needFlow : p.ch_kw >= minKw && p.ch_kw <= maxKw));
+  if (!list.length) list = cat.products.filter((p) => p.type === t && p.fuel === 'gas' && p.availability !== 'unavailable').sort((x, y) => (y.ch_kw || y.dhw_flow_lpm) - (x.ch_kw || x.dhw_flow_lpm)).slice(0, 4);
   const priced = list.map((p) => ({ p, price: basePrice(cat, a, p).total }));
   const cheapest = priced.length ? Math.min(...priced.map((x) => x.price)) : 0;
   const home = homeWords[a.property] || 'home';
+  const kind = t === 'system' ? 'system boiler' : t === 'regular' ? 'regular boiler' : 'combi boiler';
   const out = priced.map((x, i) => {
     const badges = [];
     if (i === 0) badges.push('Best match');
     if (x.price === cheapest && i !== 0) badges.push('Lowest price');
     const bath = a.bathrooms === 1 ? '1 bathroom' : a.bathrooms + ' bathrooms';
-    let why = `Sized for a ${a.bedrooms}-bedroom ${home} with ${bath} and ${BAND_LABEL[a.radiators] || ''} radiators.`;
-    if (!need30 && x.p.dhw_flow_lpm >= 12) why = `More hot-water flow than your home needs, so a good pick if you like a stronger shower. Suits a ${a.bedrooms}-bedroom ${home}.`;
-    if (need30) why = `Higher hot-water flow (${x.p.dhw_flow_lpm} litres a minute) for a busier ${a.bedrooms}-bedroom ${home} with ${bath}.`;
+    let why;
+    if (t === 'combi') {
+      why = `Sized for a ${a.bedrooms}-bedroom ${home} with ${bath} and ${BAND_LABEL[a.radiators] || ''} radiators.`;
+      if (!need30 && x.p.dhw_flow_lpm >= 12) why = `More hot-water flow than your home needs, so a good pick if you like a stronger shower. Suits a ${a.bedrooms}-bedroom ${home}.`;
+      if (need30) why = `Higher hot-water flow (${x.p.dhw_flow_lpm} litres a minute) for a busier ${a.bedrooms}-bedroom ${home} with ${bath}.`;
+      if (['standard', 'system'].includes(a.current_type)) why += ' You chose to switch to a combi, so the tank is removed.';
+    } else {
+      why = `You have a ${a.current_type} boiler and want to keep your hot water cylinder, so we recommend a ${kind} like for like. ${x.p.ch_kw} kW heating output suits a ${a.bedrooms}-bedroom ${home} with ${BAND_LABEL[a.radiators] || ''} radiators.`;
+    }
     return { product: x.p, price: x.price, badges, why };
   });
-  return { route: 'ok', why: [], notes: as.notes, options: out, need30 };
+  return { route: 'ok', why: [], notes: as.notes, options: out, need30, type: t };
 }
 
 // ---------- Promo codes (the customer must type the code; the server checks it again) ----------

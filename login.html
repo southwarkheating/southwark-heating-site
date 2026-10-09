@@ -385,5 +385,6 @@ sb.auth.onAuthStateChange(function(ev,s){setTimeout(function(){
 if(REC)setTimeout(function(){if(REC&&!document.getElementById('fnp'))newPass()},2500);
 })();
 </script>
+<script>/* V6: ?signup=1 opens the existing Create account screen (does not change the sign-in code) */(function(){if(!/[?&]signup=1/.test(location.search))return;var n=0,t=setInterval(function(){var b=document.getElementById("gos");if(b){clearInterval(t);b.click()}else if(++n>40)clearInterval(t)},150)})();</script>
 </body>
 </html>
