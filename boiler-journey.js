@@ -2,7 +2,7 @@ import CAT from './boiler-data.js';
 import * as C from './quote-core.js';
 import { icon } from './boiler-icons.js';
 
-const API = 'https://ylyasshhvuhhpmpotera.supabase.co/functions/v1/boiler-order'; // V6: Supabase function - re-prices the order, creates the job in the app and the Stripe link
+const API = 'https://ylyasshhvuhhpmpotera.supabase.co/functions/v1/boiler-order-v7'; // V6: Supabase function - re-prices the order, creates the job in the app and the Stripe link
 const FORM = 'https://formspree.io/f/mdekrqqj'; // your existing website form
 const KEY = 'sh_boiler_journey_v2';
 const root = document.getElementById('sj');
@@ -37,6 +37,7 @@ const Q = [
   { k: 'flue_issues', title: 'Do any of these apply to where the flue comes out?', help: 'Pick all that apply. These are safety clearances we check on site.', multi: true, opts: [['ground', 'Less than 2 metres from the ground'], ['boundary', 'Less than 2 metres from a neighbour\'s boundary'], ['cover', 'Under a carport, balcony or similar'], ['opening', 'Less than 30 cm from a door, window or vent'], ['none', 'None of these / not sure']] },
   { k: 'postcode', title: 'What is the postcode of the property?', help: 'So we can check we cover your area.', text: true },
 ];
+const PIC = {"current_type": "A combi is a boiler on its own with no tank. A system boiler has a hot water cylinder (tank) next to it. A standard (regular) boiler has a cylinder plus a cold water tank in the loft. A back boiler sits behind a fireplace.", "fuel": "Gas meter = mains gas, gas bottle = LPG, oil drop = oil. Most London homes are on mains gas.", "convert": "Left: a combi on its own, so the tank is removed. Right: a new boiler working with the hot water cylinder you already have.", "move": "Left: the new boiler goes in the same spot as the old one. Right: the boiler moves to a new spot.", "property": "Each picture shows a type of home. Pick the closest match.", "bedrooms": "The floor plan is a reminder to count every bedroom, including a small box room.", "bathrooms": "Count every room with a bath or shower, including en-suites.", "baths": "A bath uses a lot of hot water at once, so this helps us pick the right size boiler.", "radiators": "Count every radiator and heated towel rail in the home.", "trvs": "The picture shows a TRV: the numbered dial on the side of a radiator.", "flue_outlet": "Left: the flue pipe goes straight out through an outside wall. Right: it goes up through the roof.", "flue_distance": "Each picture shows the boiler, the outside wall, and the length of flue pipe between them.", "flue_issues": "Each picture shows where the end of the flue is outside: near the ground, near a fence or boundary, under a carport or balcony, or close to a window, door or vent."};   // plain-English explanation of the pictures on each question
 const visibleQ = () => Q.filter((q) => !q.show || q.show(S.a));
 const STAGES = ['Your home', 'Your boiler', 'Your booking', 'Review and pay'];
 const stageOf = (s) => (s === 'results' || s === 'extras' ? 2 : s === 'date' || s === 'details' ? 3 : s === 'review' ? 4 : 1);
@@ -133,7 +134,8 @@ function scrQuestion(k) {
     const sq = qic && !q.grid ? '' : '';
     body = `${qic ? `<div class="sj-qic">${qic}</div>` : ''}<div class="${q.grid ? 'sj-grid' : 'sj-list'}${per ? ' sj-icgrid' : ''}">${opts.map(([v, l, sub]) => `<button type="button" class="sj-opt ${per ? 'sj-hasic' : ''} ${String(cur) === String(v) ? 'on' : ''}" data-pick="${esc(v)}">${per ? icon(k, v) : ''}<span>${esc(l)}</span>${sub ? `<em>${esc(sub)}</em>` : ''}</button>`).join('')}</div>${sq}`;
   }
-  return `<div class="sj-card">${header(esc(q.title), q.help ? esc(q.help) : '', true)}${body}</div>`;
+  const pn = PIC[k] ? `<p class="sj-picnote"><b>What the pictures show:</b> ${esc(PIC[k])}</p>` : '';
+  return `<div class="sj-card">${header(esc(q.title), q.help ? esc(q.help) : '', true)}${pn}${body}</div>`;
 }
 
 function pick(k, raw) {
@@ -169,13 +171,12 @@ function scrResults() {
   const r = C.recommend(CAT, S.a);
   if (r.route !== 'ok') return scrQuote();
   const incl = CAT.included.map((x) => `<li>${esc(x)}</li>`).join('');
-  const SHOW = 6;
   const cards = r.options.map((o, idx) => {
     const p = o.product;
     const tname = { combi: 'Combi (no tank)', system: 'System (uses your hot water cylinder)', regular: 'Regular (uses your cylinder and loft tank)' }[p.type] || p.type;
     const specs = [p.ch_kw ? ['Heating output', p.ch_kw + ' kW'] : null, p.dhw_flow_lpm ? ['Hot water flow', 'about ' + p.dhw_flow_lpm + ' litres/min'] : null, p.warranty_years ? ['Warranty', p.warranty_years + ' years'] : null, p.efficiency_pct ? ['Efficiency', 'ErP class ' + (p.erp || '') + ', ' + p.efficiency_pct + '%'] : null, ['Type', tname]].filter(Boolean)
       .map(([a, b]) => `<div><dt>${a}</dt><dd>${esc(b)}</dd></div>`).join('');
-    return `<article class="sj-prod ${o.badges[0] === 'Best match' ? 'best' : ''}"${idx >= SHOW && !S.showAll ? ' hidden' : ''}>
+    return `<article class="sj-prod ${idx === 0 ? 'best' : ''}">
       ${o.badges.length ? `<p class="sj-badges">${o.badges.map((b) => `<span class="sj-tag">${esc(b)}</span>`).join('')}</p>` : ''}
       <div class="sj-prod-top"><div class="sj-img">${boilerImg(p)}</div><div><p class="sj-mf">${esc(p.manufacturer)}</p><h3>${esc(p.model)}</h3><p class="sj-why">${esc(o.why)}</p></div></div>
       <ul class="sj-ben">${p.benefits.map((b) => `<li>${esc(b)}</li>`).join('')}</ul>
@@ -185,7 +186,7 @@ function scrResults() {
   }).join('');
   const notes = r.notes.length ? `<div class="sj-alert"><b>Good to know</b>${r.notes.map((n) => `<p>${esc(n)}</p>`).join('')}</div>` : '';
   const deal = dealLive() ? `<div class="sj-dealbar"><span class="sj-dealbadge">SAVE<br>£100</span><p><b>Winter deal:</b> book and install by 31 December 2026 and save £100. Enter code <b>SOUTHWARK100</b> when you review your order.</p></div>` : '';
-  return `<div class="sj-card">${header('Boilers that suit your home', 'These are sized for the answers you gave. Prices are fixed and include fitting.', true)}${deal}${notes}<div class="sj-curb"><label for="cb">Your current boiler (optional)</label><input id="cb" maxlength="80" autocomplete="off" placeholder="Make and model, e.g. Worcester Greenstar 30i" value="${esc(S.curBoiler || '')}"></div>${cards || '<p>No boilers found.</p>'}${dealLive() ? '<p class="sj-note">*£100 off with code SOUTHWARK100. Code must be entered at checkout and the installation must take place on or before 31 December 2026. One code per order.</p>' : ''}${r.options.length > SHOW && !S.showAll ? `<button type="button" class="sj-btn sj-ghost" data-act="show-all">Show all ${r.options.length} boilers</button>` : ''}
+  return `<div class="sj-card">${header('Your 3 best options', 'Matched to your answers: the right type and size for your home, from three trusted makes. Prices are fixed and include fitting.', true)}${deal}${notes}<div class="sj-curb"><label for="cb">Your current boiler (optional)</label><input id="cb" maxlength="80" autocomplete="off" placeholder="Make and model, e.g. Worcester Greenstar 30i" value="${esc(S.curBoiler || '')}"></div>${cards || '<p>No boilers found.</p>'}${dealLive() ? '<p class="sj-note">*£100 off with code SOUTHWARK100. Code must be entered at checkout and the installation must take place on or before 31 December 2026. One code per order.</p>' : ''}
   <div class="sj-save"><details><summary>Save this quote for later</summary><form id="sj-save" novalidate><label for="se">Your email</label><input id="se" type="email" autocomplete="email" inputmode="email"><p class="sj-err" id="se-e" role="alert"></p><button class="sj-btn sj-ghost" type="submit">Email me this quote</button></form></details></div>
   <p class="sj-note">Need to talk first? Call <a href="tel:+44${CAT.settings.phone.replace(/^0/, '').replace(/\s/g, '')}">${esc(CAT.settings.phone)}</a>.</p></div>`;
 }
@@ -284,6 +285,11 @@ function scrReview() {
 }
 
 // ---------- confirmation ----------
+function portalBox() {
+  const em = (S.cust && S.cust.email) || '';
+  const q = 'login?signup=1' + (C.isEmail(em) ? '&email=' + encodeURIComponent(em.trim()) : '');
+  return `<div class="sj-portal"><h3>Create your customer account</h3><p>Your installation is already saved to your account. Sign up${em ? ' with <b>' + esc(em) + '</b>' : ' with the same email you used for this order'} and you can see your job, book appointments, view invoices and certificates, pay and contact us, all in one place.</p><a class="sj-btn" href="${esc(q)}">Create my account</a><p class="sj-note">Already have an account? <a href="login">Sign in</a>.</p></div>`;
+}
 function scrDone() {
   const d = S.done || {};
   const paid = d.mode === 'paid';
@@ -291,6 +297,7 @@ function scrDone() {
   ${d.ref ? `<p class="sj-ref">Reference <b>${esc(d.ref)}</b></p>` : ''}
   <p>${paid ? 'Your payment was received.' : 'We have your booking request.'} ${d.date ? `Your installation date is <b>${esc(d.dateText)}</b>.` : ''}</p>
   ${d.product ? `<div class="sj-sum"><div class="sj-sum-t">${esc(d.product)}</div>${d.promo ? `<div class="sj-row sj-disc"><span>Promo code ${esc(d.promo)}</span><b>included</b></div>` : ''}<div class="sj-row sj-tot"><span>Total fixed price</span><b>${money(d.total)}</b></div></div>` : ''}
+  ${portalBox()}
   <h3>What happens next</h3><ol class="sj-steps"><li>We check your order and contact you to confirm your date and arrival time.</li><li>If anything on site needs extra work, we agree the price with you before we start.</li><li>Your Gas Safe registered engineer fits your new boiler.</li></ol>
   <p class="sj-note">Questions? Call <a href="tel:+44${CAT.settings.phone.replace(/^0/, '').replace(/\s/g, '')}">${esc(CAT.settings.phone)}</a>.</p><a class="sj-btn sj-ghost" href="./">Back to the home page</a></div>`;
 }

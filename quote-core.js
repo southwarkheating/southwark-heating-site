@@ -95,39 +95,53 @@ export function wantType(a) {
   if (['standard', 'system'].includes(a.current_type)) { if (a.convert === 'no') return a.current_type === 'system' ? 'system' : 'regular'; return 'combi'; }
   return 'combi';
 }
-const MIN_KW = { '0-5': 15, '6-9': 18, '10-13': 24, '14-16': 30, '17+': 35 };   // GUESSED sizing rule - owner to confirm
+// Size rules (GUESSED - owner to confirm). Heating output for system / heat-only by radiators; combi size by hot-water demand.
+const HEAT_KW = { '0-5': 15, '6-9': 18, '10-13': 24, '14-16': 30, '17+': 30 };
+export function sizeNeed(a, t) {
+  if (t === 'combi') {
+    const big = a.bathrooms >= 3 || a.baths >= 2 || a.bedrooms >= 5 || ['14-16', '17+'].includes(a.radiators);
+    const mid = a.bathrooms >= 2 || a.bedrooms >= 4 || a.radiators === '10-13';
+    return big ? 35 : mid ? 30 : 24;
+  }
+  let k = HEAT_KW[a.radiators] || 15;
+  if (a.bedrooms >= 4) k = Math.max(k, 24);
+  if (a.bedrooms >= 5) k = 30;
+  if (t === 'regular' && a.radiators === '0-5' && a.bedrooms <= 2) k = 12;
+  return k;
+}
+export const SHOW_MAX = 3;   // never more than 3 choices, so the customer is not overwhelmed
 export function recommend(cat, a) {
   const as = assess(a);
   if (as.route !== 'ok') return { ...as, options: [] };
   const t = wantType(a);
-  const big = a.bathrooms >= 3 || a.baths >= 2 || a.bedrooms >= 5;
-  const need30 = a.bathrooms >= 2 || a.bedrooms >= 4 || a.radiators === '10-13';
-  const needFlow = big ? 14 : need30 ? 12 : 9.5;   // a 24 kW combi gives about 9.8 litres/min - right for a 1-bathroom home
-  const minKw = Math.max(MIN_KW[a.radiators] || 15, a.bedrooms >= 4 ? 24 : 0, big ? 30 : 0);
-  const maxKw = (a.property === 'flat' || a.bedrooms <= 2) && ['0-5', '6-9'].includes(a.radiators) && !big ? 30 : 99;
-  let list = cat.products.filter((p) => p.type === t && p.fuel === 'gas' && p.availability !== 'unavailable' && (t === 'combi' ? p.dhw_flow_lpm >= needFlow : p.ch_kw >= minKw && p.ch_kw <= maxKw));
-  if (!list.length) list = cat.products.filter((p) => p.type === t && p.fuel === 'gas' && p.availability !== 'unavailable').sort((x, y) => (y.ch_kw || y.dhw_flow_lpm) - (x.ch_kw || x.dhw_flow_lpm)).slice(0, 4);
-  const priced = list.map((p) => ({ p, price: basePrice(cat, a, p).total }));
-  const cheapest = priced.length ? Math.min(...priced.map((x) => x.price)) : 0;
+  const need = sizeNeed(a, t);
+  const pool = cat.products.filter((p) => p.type === t && p.fuel === 'gas' && p.availability !== 'unavailable');
+  const makes = {};
+  for (const p of pool) (makes[p.manufacturer] = makes[p.manufacturer] || []).push(p);
+  // one boiler per make: the smallest size that meets the need (a 25 kW model counts for a 24 kW need).
+  // A make with nothing big enough is left out, so we never offer an undersized boiler.
+  let picks = Object.values(makes).map((list) => list.slice().sort((x, y) => x.kw - y.kw).find((p) => p.kw >= need - 1)).filter(Boolean);
+  if (!picks.length) picks = Object.values(makes).map((list) => list.slice().sort((x, y) => y.kw - x.kw)[0]);
+  const priced = picks.map((p) => ({ p, price: basePrice(cat, a, p).total })).sort((x, y) => x.price - y.price || x.p.priority - y.p.priority).slice(0, SHOW_MAX);
   const home = homeWords[a.property] || 'home';
-  const kind = t === 'system' ? 'system boiler' : t === 'regular' ? 'regular boiler' : 'combi boiler';
+  const bath = a.bathrooms === 1 ? '1 bathroom' : a.bathrooms + ' bathrooms';
   const out = priced.map((x, i) => {
-    const badges = [];
-    if (i === 0) badges.push('Best match');
-    if (x.price === cheapest && i !== 0) badges.push('Lowest price');
-    const bath = a.bathrooms === 1 ? '1 bathroom' : a.bathrooms + ' bathrooms';
+    const p = x.p;
+    const badges = i === 0 ? ['Best value'] : [];
     let why;
     if (t === 'combi') {
-      why = `Sized for a ${a.bedrooms}-bedroom ${home} with ${bath} and ${BAND_LABEL[a.radiators] || ''} radiators.`;
-      if (!need30 && x.p.dhw_flow_lpm >= 12) why = `More hot-water flow than your home needs, so a good pick if you like a stronger shower. Suits a ${a.bedrooms}-bedroom ${home}.`;
-      if (need30) why = `Higher hot-water flow (${x.p.dhw_flow_lpm} litres a minute) for a busier ${a.bedrooms}-bedroom ${home} with ${bath}.`;
-      if (['standard', 'system'].includes(a.current_type)) why += ' You chose to switch to a combi, so the tank is removed.';
+      why = need >= 35 ? `Our strongest hot-water size (${p.kw} kW) for a busy ${a.bedrooms}-bedroom ${home} with ${bath}.`
+        : need >= 30 ? `A ${p.kw} kW combi gives stronger hot-water flow for a ${a.bedrooms}-bedroom ${home} with ${bath}.`
+        : `A ${p.kw} kW combi is the right size for a ${a.bedrooms}-bedroom ${home} with ${bath}.`;
+      if (['standard', 'system'].includes(a.current_type)) why += ' You chose to switch to a combi, so your hot water tank is removed.';
     } else {
-      why = `You have a ${a.current_type} boiler and want to keep your hot water cylinder, so we recommend a ${kind} like for like. ${x.p.ch_kw} kW heating output suits a ${a.bedrooms}-bedroom ${home} with ${BAND_LABEL[a.radiators] || ''} radiators.`;
+      const kind = t === 'system' ? 'system boiler' : 'heat-only (regular) boiler';
+      why = `You have a ${a.current_type === 'standard' ? 'regular' : a.current_type} boiler and are keeping your hot water cylinder, so this is a like-for-like ${kind}. ${p.kw} kW suits a ${a.bedrooms}-bedroom ${home} with ${BAND_LABEL[a.radiators] || ''} radiators.`;
     }
-    return { product: x.p, price: x.price, badges, why };
+    if (i === 0) why += ' The lowest price of your three choices.';
+    return { product: p, price: x.price, badges, why };
   });
-  return { route: 'ok', why: [], notes: as.notes, options: out, need30, type: t };
+  return { route: 'ok', why: [], notes: as.notes, options: out, need, type: t };
 }
 
 // ---------- Promo codes (the customer must type the code; the server checks it again) ----------
