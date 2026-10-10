@@ -213,5 +213,24 @@ document.getElementById('fmsg').textContent='The online form is not active yet. 
 (function(){var p=document.getElementById('pop'),x=document.getElementById('popx'),s=document.querySelector('.boilerimg'),i=document.getElementById('popimg');if(!p||!x)return;var done=false;try{done=sessionStorage.getItem('popClosed')==='1'}catch(e){}if(done)return;if(s&&i)i.src=s.src;function close(){p.classList.remove('show');setTimeout(function(){p.classList.remove('on')},350);try{sessionStorage.setItem('popClosed','1')}catch(e){}}x.addEventListener('click',close);document.addEventListener('keydown',function(e){if(e.key==='Escape'&&p.classList.contains('on'))close()});setTimeout(function(){p.classList.add('on');requestAnimationFrame(function(){requestAnimationFrame(function(){p.classList.add('show')})})},3500)})();</script>
 <script>/* SOUTHWARK100 deal: hide after 31 Dec 2026 (UK time) + tap to copy the code */(function(){try{var t=new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/London",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());if(t>"2026-12-31")document.documentElement.className+=" swd-off"}catch(e){}
 [].forEach.call(document.querySelectorAll(".swd-code"),function(b){b.addEventListener("click",function(){var c=b.getAttribute("data-code"),s=b.querySelector("small"),o=s.textContent;function done(){s.textContent="Copied!";setTimeout(function(){s.textContent=o},1800)}if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(c).then(done,done)}else{done()}})})})();</script>
+<script>
+/* Area intro: our van drives across the screen . Self-removing, purely visual. */
+(function(){
+if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+var st=document.createElement('style');
+st.textContent='.vi-o{position:fixed;inset:0;pointer-events:none;z-index:2147483000;overflow:hidden;transition:opacity .35s ease}'+
+'.vi-v{position:absolute;left:0;top:56%;width:min(72vw,460px);height:auto;transform:translateX(-110%);animation:viDrive 1.6s cubic-bezier(.55,.05,.4,1) forwards;filter:drop-shadow(0 10px 12px rgba(17,43,79,.25))}'+
+'.vi-v img{display:block;width:100%;height:auto}.vi-v>img:first-child{animation:viBob .32s ease-in-out infinite alternate}'+
+'.vi-v .vi-w{position:absolute;width:10.569%;height:auto;transform:translate(-50%,-50%);animation:viSpin .42s linear infinite}@keyframes viSpin{to{transform:translate(-50%,-50%) rotate(360deg)}}'+
+'.vi-l{position:absolute;right:96%;height:3px;border-radius:3px;background:linear-gradient(90deg,rgba(17,43,79,0),rgba(17,43,79,.35))}'+
+'@keyframes viDrive{0%{transform:translateX(-110%)}100%{transform:translateX(calc(100vw + 10%))}}@keyframes viBob{to{transform:translateY(-2px)}}';
+document.head.appendChild(st);
+var o=document.createElement('div');o.className='vi-o';o.setAttribute('aria-hidden','true');
+o.innerHTML='<div class="vi-v"><img src="southwark-van.webp" alt=""><img class="vi-w" src="southwark-van-wheel1.webp" alt="" style="left:17.059%;top:76.415%"><img class="vi-w" src="southwark-van-wheel2.webp" alt="" style="left:83.171%;top:76.415%"><i class="vi-l" style="top:32%;width:38%"></i><i class="vi-l" style="top:50%;width:55%"></i><i class="vi-l" style="top:68%;width:30%"></i></div>';
+document.body.appendChild(o);
+var done=false;function finish(){if(done)return;done=true;if(o.parentNode)o.parentNode.removeChild(o);if(st.parentNode)st.parentNode.removeChild(st);}
+setTimeout(function(){o.style.opacity='0'},1650);setTimeout(finish,2200);
+})();
+</script>
 </body>
 </html>

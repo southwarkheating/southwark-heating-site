@@ -171,6 +171,7 @@ function scrResults() {
   const r = C.recommend(CAT, S.a);
   if (r.route !== 'ok') return scrQuote();
   const incl = CAT.included.map((x) => `<li>${esc(x)}</li>`).join('');
+  const instWty = CAT.settings.install_warranty_months;
   const cards = r.options.map((o, idx) => {
     const p = o.product;
     const tname = { combi: 'Combi (no tank)', system: 'System (uses your hot water cylinder)', regular: 'Regular (uses your cylinder and loft tank)' }[p.type] || p.type;
@@ -178,15 +179,16 @@ function scrResults() {
       .map(([a, b]) => `<div><dt>${a}</dt><dd>${esc(b)}</dd></div>`).join('');
     return `<article class="sj-prod ${idx === 0 ? 'best' : ''}">
       ${o.badges.length ? `<p class="sj-badges">${o.badges.map((b) => `<span class="sj-tag">${esc(b)}</span>`).join('')}</p>` : ''}
+      <p class="sj-wty">${p.mfr_warranty_upto ? `<span class="sj-wtag sj-wtag-mfr"><b>Up to ${esc(p.mfr_warranty_upto)}-year</b> manufacturer's warranty*</span>` : ''}${instWty ? `<span class="sj-wtag sj-wtag-ins"><b>${esc(instWty)}-month</b> installation warranty</span>` : ''}</p>
       <div class="sj-prod-top"><div class="sj-img">${boilerImg(p)}</div><div><p class="sj-mf">${esc(p.manufacturer)}</p><h3>${esc(p.model)}</h3><p class="sj-why">${esc(o.why)}</p></div></div>
       <ul class="sj-ben">${p.benefits.map((b) => `<li>${esc(b)}</li>`).join('')}</ul>
       <dl class="sj-specs">${specs}</dl>
-      <details class="sj-more"><summary>See what is included</summary><ul>${incl}</ul><p class="sj-note">${esc(p.warranty_note)}.</p></details>
+      <details class="sj-more"><summary>See what is included</summary><ul>${incl}</ul><p class="sj-note">${p.mfr_warranty_upto ? '*' + esc(p.mfr_warranty_terms) + '. Cover lengths vary by model and can change. ' : ''}${instWty ? 'Our own ' + esc(instWty) + '-month installation warranty covers our workmanship. ' : ''}${esc(p.warranty_note)}.</p></details>
       <div class="sj-buy"><div><span class="sj-lbl">Your fixed price including installation</span><span class="sj-price">${money(o.price)}</span>${dealLive() ? `<span class="sj-deal">Or ${money(o.price - C.PROMOS[C.PROMO_DEFAULT].amount)} with code <b>SOUTHWARK100</b>*</span>` : ''}</div><button class="sj-btn" data-choose="${esc(p.id)}">Choose this boiler</button></div></article>`;
   }).join('');
   const notes = r.notes.length ? `<div class="sj-alert"><b>Good to know</b>${r.notes.map((n) => `<p>${esc(n)}</p>`).join('')}</div>` : '';
   const deal = dealLive() ? `<div class="sj-dealbar"><span class="sj-dealbadge">SAVE<br>£100</span><p><b>Winter deal:</b> book and install by 31 December 2026 and save £100. Enter code <b>SOUTHWARK100</b> when you review your order.</p></div>` : '';
-  return `<div class="sj-card">${header('Your 3 best options', 'Matched to your answers: the right type and size for your home, from three trusted makes. Prices are fixed and include fitting.', true)}${deal}${notes}<div class="sj-curb"><label for="cb">Your current boiler (optional)</label><input id="cb" maxlength="80" autocomplete="off" placeholder="Make and model, e.g. Worcester Greenstar 30i" value="${esc(S.curBoiler || '')}"></div>${cards || '<p>No boilers found.</p>'}${dealLive() ? '<p class="sj-note">*£100 off with code SOUTHWARK100. Code must be entered at checkout and the installation must take place on or before 31 December 2026. One code per order.</p>' : ''}
+  return `<div class="sj-card">${header('Your 3 best options', 'Matched to your answers: the right type and size for your home, from three trusted makes. Prices are fixed and include fitting.', true)}${deal}${notes}<div class="sj-curb"><label for="cb">Your current boiler (optional)</label><input id="cb" maxlength="80" autocomplete="off" placeholder="Make and model, e.g. Worcester Greenstar 30i" value="${esc(S.curBoiler || '')}"></div>${cards || '<p>No boilers found.</p>'}${r.options.some((o) => o.product.mfr_warranty_upto) ? `<p class="sj-note">*Manufacturer's warranties are subject to the manufacturer's terms and registration, vary by model and can change. Tap "See what is included" on a boiler for its details.</p>` : ''}${dealLive() ? '<p class="sj-note">*£100 off with code SOUTHWARK100. Code must be entered at checkout and the installation must take place on or before 31 December 2026. One code per order.</p>' : ''}
   <div class="sj-save"><details><summary>Save this quote for later</summary><form id="sj-save" novalidate><label for="se">Your email</label><input id="se" type="email" autocomplete="email" inputmode="email"><p class="sj-err" id="se-e" role="alert"></p><button class="sj-btn sj-ghost" type="submit">Email me this quote</button></form></details></div>
   <p class="sj-note">Need to talk first? Call <a href="tel:+44${CAT.settings.phone.replace(/^0/, '').replace(/\s/g, '')}">${esc(CAT.settings.phone)}</a>.</p></div>`;
 }

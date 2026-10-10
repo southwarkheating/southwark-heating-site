@@ -175,5 +175,24 @@ document.getElementById('fmsg').textContent='The online form is not active yet. 
 })();
 </script>
 <script>try{localStorage.removeItem('sh_booking_v1');localStorage.removeItem('sh_boiler_v1')}catch(e){}</script>
+<script>
+/* Area intro: our van drives across the screen . Self-removing, purely visual. */
+(function(){
+if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+var st=document.createElement('style');
+st.textContent='.vi-o{position:fixed;inset:0;pointer-events:none;z-index:2147483000;overflow:hidden;transition:opacity .35s ease}'+
+'.vi-v{position:absolute;left:0;top:56%;width:min(72vw,460px);height:auto;transform:translateX(-110%);animation:viDrive 1.6s cubic-bezier(.55,.05,.4,1) forwards;filter:drop-shadow(0 10px 12px rgba(17,43,79,.25))}'+
+'.vi-v img{display:block;width:100%;height:auto}.vi-v>img:first-child{animation:viBob .32s ease-in-out infinite alternate}'+
+'.vi-v .vi-w{position:absolute;width:10.569%;height:auto;transform:translate(-50%,-50%);animation:viSpin .42s linear infinite}@keyframes viSpin{to{transform:translate(-50%,-50%) rotate(360deg)}}'+
+'.vi-l{position:absolute;right:96%;height:3px;border-radius:3px;background:linear-gradient(90deg,rgba(17,43,79,0),rgba(17,43,79,.35))}'+
+'@keyframes viDrive{0%{transform:translateX(-110%)}100%{transform:translateX(calc(100vw + 10%))}}@keyframes viBob{to{transform:translateY(-2px)}}';
+document.head.appendChild(st);
+var o=document.createElement('div');o.className='vi-o';o.setAttribute('aria-hidden','true');
+o.innerHTML='<div class="vi-v"><img src="southwark-van.webp" alt=""><img class="vi-w" src="southwark-van-wheel1.webp" alt="" style="left:17.059%;top:76.415%"><img class="vi-w" src="southwark-van-wheel2.webp" alt="" style="left:83.171%;top:76.415%"><i class="vi-l" style="top:32%;width:38%"></i><i class="vi-l" style="top:50%;width:55%"></i><i class="vi-l" style="top:68%;width:30%"></i></div>';
+document.body.appendChild(o);
+var done=false;function finish(){if(done)return;done=true;if(o.parentNode)o.parentNode.removeChild(o);if(st.parentNode)st.parentNode.removeChild(st);}
+setTimeout(function(){o.style.opacity='0'},1650);setTimeout(finish,2200);
+})();
+</script>
 </body>
 </html>
