@@ -109,26 +109,27 @@ export function sizeNeed(a, t) {
   if (t === 'regular' && a.radiators === '0-5' && a.bedrooms <= 2) k = 12;
   return k;
 }
-export const SHOW_MAX = 3;   // never more than 3 choices, so the customer is not overwhelmed
+export const SHOW_MAX = 4;   // the recommended makes, in this order; every other suitable boiler is listed underneath
+export const PREFERRED_MAKES = ['Ideal', 'Vaillant', 'Worcester Bosch', 'Baxi'];
 export function recommend(cat, a) {
   const as = assess(a);
   if (as.route !== 'ok') return { ...as, options: [] };
   const t = wantType(a);
   const need = sizeNeed(a, t);
-  // the three recommendations come from the whole catalogue (best value per make); every other suitable boiler is offered separately (see suitable())
+  // recommendations: one boiler from each preferred make, always in the order Ideal, Vaillant, Worcester Bosch, Baxi.
+  // Per make: a boiler from the hand-picked online range if one is big enough, otherwise from the full list; smallest size that
+  // meets the need (a 25 kW model counts for a 24 kW need), cheapest first. A make with nothing big enough is left out.
   const pool = cat.products.filter((p) => p.type === t && p.fuel === 'gas' && p.availability !== 'unavailable');
-  const makes = {};
-  for (const p of pool) (makes[p.manufacturer] = makes[p.manufacturer] || []).push(p);
-  // one boiler per make: the smallest size that meets the need (a 25 kW model counts for a 24 kW need).
-  // A make with nothing big enough is left out, so we never offer an undersized boiler.
-  let picks = Object.values(makes).map((list) => list.slice().sort((x, y) => x.kw - y.kw).find((p) => p.kw >= need - 1)).filter(Boolean);
-  if (!picks.length) picks = Object.values(makes).map((list) => list.slice().sort((x, y) => y.kw - x.kw)[0]);
-  const priced = picks.map((p) => ({ p, price: basePrice(cat, a, p).total })).sort((x, y) => x.price - y.price || x.p.priority - y.p.priority).slice(0, SHOW_MAX);
+  const best = (list) => list.filter((p) => p.kw >= need - 1).sort((x, y) => x.kw - y.kw || basePrice(cat, a, x).total - basePrice(cat, a, y).total || x.priority - y.priority)[0];
+  let picks = PREFERRED_MAKES.map((mk) => { const l = pool.filter((p) => p.manufacturer === mk); return best(l.filter((p) => p.online_pick)) || best(l); }).filter(Boolean);
+  if (!picks.length) { const top = Math.max(0, ...pool.map((p) => p.kw)); picks = PREFERRED_MAKES.map((mk) => pool.find((p) => p.manufacturer === mk && p.kw === top)).filter(Boolean); }
+  const priced = picks.slice(0, SHOW_MAX).map((p) => ({ p, price: basePrice(cat, a, p).total }));
+  const cheapest = Math.min(...priced.map((x) => x.price));
   const home = homeWords[a.property] || 'home';
   const bath = a.baths >= 2 ? 'baths most days' : a.baths === 1 ? 'a bath a day' : 'mostly showers';
   const out = priced.map((x, i) => {
     const p = x.p;
-    const badges = i === 0 ? ['Best value'] : [];
+    const badges = x.price === cheapest ? ['Best value'] : [];
     let why;
     if (t === 'combi') {
       why = need >= 35 ? `Our strongest hot-water size (${p.kw} kW) for a busy ${a.bedrooms}-bedroom ${home} with ${bath}.`
@@ -139,7 +140,7 @@ export function recommend(cat, a) {
       const kind = t === 'system' ? 'system boiler' : 'heat-only (regular) boiler';
       why = `You have a ${a.current_type === 'standard' ? 'regular' : a.current_type} boiler and are keeping your hot water cylinder, so this is a like-for-like ${kind}. ${p.kw} kW suits a ${a.bedrooms}-bedroom ${home} with ${BAND_LABEL[a.radiators] || ''} radiators.`;
     }
-    if (i === 0) why += ' The lowest price of your three choices.';
+    if (x.price === cheapest) why += ' The lowest price of these choices.';
     return { product: p, price: x.price, badges, why };
   });
   return { route: 'ok', why: [], notes: as.notes, options: out, need, type: t };
