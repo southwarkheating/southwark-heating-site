@@ -115,6 +115,7 @@ export function recommend(cat, a) {
   if (as.route !== 'ok') return { ...as, options: [] };
   const t = wantType(a);
   const need = sizeNeed(a, t);
+  // the three recommendations come from the whole catalogue (best value per make); every other suitable boiler is offered separately (see suitable())
   const pool = cat.products.filter((p) => p.type === t && p.fuel === 'gas' && p.availability !== 'unavailable');
   const makes = {};
   for (const p of pool) (makes[p.manufacturer] = makes[p.manufacturer] || []).push(p);
@@ -124,7 +125,7 @@ export function recommend(cat, a) {
   if (!picks.length) picks = Object.values(makes).map((list) => list.slice().sort((x, y) => y.kw - x.kw)[0]);
   const priced = picks.map((p) => ({ p, price: basePrice(cat, a, p).total })).sort((x, y) => x.price - y.price || x.p.priority - y.p.priority).slice(0, SHOW_MAX);
   const home = homeWords[a.property] || 'home';
-  const bath = a.bathrooms === 1 ? '1 bathroom' : a.bathrooms + ' bathrooms';
+  const bath = a.baths >= 2 ? 'baths most days' : a.baths === 1 ? 'a bath a day' : 'mostly showers';
   const out = priced.map((x, i) => {
     const p = x.p;
     const badges = i === 0 ? ['Best value'] : [];
@@ -142,6 +143,15 @@ export function recommend(cat, a) {
     return { product: p, price: x.price, badges, why };
   });
   return { route: 'ok', why: [], notes: as.notes, options: out, need, type: t };
+}
+// Every other boiler that suits these answers: the right type and big enough (same sizing rule as above), cheapest first.
+export function suitable(cat, a, exclude = []) {
+  const as = assess(a || {});
+  if (as.route !== 'ok') return [];
+  const t = wantType(a), need = sizeNeed(a, t), skip = new Set(exclude);
+  let list = cat.products.filter((p) => p.type === t && p.fuel === 'gas' && p.availability !== 'unavailable' && p.kw >= need - 1);
+  if (!list.length) { const top = Math.max(0, ...cat.products.filter((p) => p.type === t).map((p) => p.kw)); list = cat.products.filter((p) => p.type === t && p.kw === top); }
+  return list.filter((p) => !skip.has(p.id)).map((p) => ({ product: p, price: basePrice(cat, a, p).total })).sort((x, y) => x.price - y.price || x.product.priority - y.product.priority);
 }
 
 // ---------- Promo codes (the customer must type the code; the server checks it again) ----------
@@ -164,7 +174,7 @@ export function priceOrder(cat, a, productId, extras = {}, date = null, now = ne
   const as = assess(a || {});
   if (as.route !== 'ok') return { ok: false, error: 'This home needs a personal quote' };
   const options = recommend(cat, a).options;
-  const opt = options.find((o) => o.product.id === productId);
+  const opt = options.find((o) => o.product.id === productId) || suitable(cat, a).find((o) => o.product.id === productId);
   if (!opt) return { ok: false, error: 'That boiler is not available for these answers' };
   const bp = basePrice(cat, a, opt.product);
   const lines = [...bp.parts];
@@ -199,7 +209,7 @@ export function describeAnswers(a) {
   return [
     ['Current boiler', t[a.current_type] || ''], ['Fuel', (a.fuel || '').toUpperCase()],
     ['Switch to combi', a.convert ? (a.convert === 'yes' ? 'Yes' : 'No') : ''], ['Move boiler', a.move === 'yes' ? 'Yes' : 'No'],
-    ['Home', a.property], ['Bedrooms', a.bedrooms], ['Bathrooms', a.bathrooms], ['Baths', a.baths], ['Radiators', BAND_LABEL[a.radiators]],
+    ['Home', a.property], ['Bedrooms', a.bedrooms], ['Bathrooms', a.bathrooms], ['Baths a day', a.baths === 3 ? '3 or more' : a.baths], ['Radiators', BAND_LABEL[a.radiators]],
     ['TRVs on all radiators', a.trvs], ['Flue outlet', a.flue_outlet], ['Flue distance from outside wall', a.flue_distance],
     ['Flue clearance points', Array.isArray(a.flue_issues) ? a.flue_issues.join(', ') : ''], ['Postcode', a.postcode],
   ].filter(([, v]) => v !== '' && v != null && v !== undefined);

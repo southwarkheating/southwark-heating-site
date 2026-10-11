@@ -3,7 +3,7 @@ import * as C from './quote-core.js';
 import { icon } from './boiler-icons.js';
 
 const API = 'https://ylyasshhvuhhpmpotera.supabase.co/functions/v1/boiler-order-v7'; // V6: Supabase function - re-prices the order, creates the job in the app and the Stripe link
-const FORM = 'https://formspree.io/f/mdekrqqj'; // your existing website form
+const ENQ = 'https://ylyasshhvuhhpmpotera.supabase.co/functions/v1/website-enquiry'; // enquiries go straight into the Southwark Heating app
 const KEY = 'sh_boiler_journey_v2';
 const root = document.getElementById('sj');
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -28,16 +28,15 @@ const Q = [
   { k: 'move_to', title: 'Where do you want the new boiler?', help: 'Moving costs more. The price is added to your installation.', show: (a) => a.move === 'yes', dyn: () => CAT.moves.map((m) => [m.id, m.label, m.price != null ? '+' + money(m.price) : 'We will price this for you']) },
   { k: 'property', title: 'Which of these best describes your home?', opts: [['detached', 'Detached'], ['semi', 'Semi-detached'], ['terraced', 'Terraced'], ['flat', 'Flat'], ['bungalow', 'Bungalow']] },
   { k: 'bedrooms', title: 'How many bedrooms do you have?', grid: true, num: true, opts: [[1, '1'], [2, '2'], [3, '3'], [4, '4'], [5, '5'], [6, '6 or more']] },
-  { k: 'bathrooms', title: 'How many bathrooms and shower rooms?', grid: true, num: true, opts: [[1, '1'], [2, '2'], [3, '3 or more']] },
-  { k: 'baths', title: 'How many baths do you have, or plan to have?', grid: true, num: true, opts: [[0, 'None'], [1, '1'], [2, '2 or more']] },
-  { k: 'radiators', title: 'Roughly how many radiators do you have?', opts: C.BANDS.map((b) => [b, C.BAND_LABEL[b] + ' radiators']) },
-  { k: 'trvs', title: 'Do all your radiators have thermostatic valves (TRVs)?', help: 'A TRV is the dial on a radiator that sets the temperature for that room.', opts: [['yes', 'Yes'], ['no', 'No'], ['unsure', 'Not sure']] },
+  { k: 'baths', title: 'How many baths do you have a day?', help: 'Roughly, for everyone in the home on a normal day. Showers do not count.', grid: true, num: true, opts: [[0, 'None, or less than one'], [1, '1 a day'], [2, '2 a day'], [3, '3 or more']] },
+  { k: 'radiators', title: 'Roughly how many radiators do you have?', help: 'Count every radiator and heated towel rail. As a guide, a 1 to 2 bedroom flat usually has 4 to 6, a 3 bedroom house 7 to 10, and a 4 to 5 bedroom house 11 to 15.', opts: C.BANDS.map((b) => [b, C.BAND_LABEL[b] + ' radiators']) },
+  { k: 'trvs', title: 'Do all your radiators have thermostatic valves (TRVs)?', help: 'A TRV is the numbered dial (usually 1 to 5) on the side of a radiator that sets the temperature for that room. Most homes have one on every radiator except the one in the same room as the main thermostat, often the hallway. If a radiator only has a plain on/off knob with no numbers, it is not a TRV.', opts: [['yes', 'Yes'], ['no', 'No'], ['unsure', 'Not sure']] },
   { k: 'flue_outlet', title: 'Where will the flue come out?', help: 'The flue is the pipe that takes fumes from the boiler outside. Usually it goes straight through an outside wall.', opts: [['wall', 'Through a wall'], ['roof', 'Through the roof'], ['unknown', 'I do not know']] },
-  { k: 'flue_distance', title: 'How far will the boiler be from an outside wall?', help: 'This tells us how much flue pipe is needed.', opts: [['<1', 'Under 1 metre'], ['1-2', '1 to 2 metres'], ['2-3', '2 to 3 metres'], ['3+', '3 metres or more'], ['unknown', 'I do not know']], show: (a) => a.flue_outlet !== 'roof' },
-  { k: 'flue_issues', title: 'Do any of these apply to where the flue comes out?', help: 'Pick all that apply. These are safety clearances we check on site.', multi: true, opts: [['ground', 'Less than 2 metres from the ground'], ['boundary', 'Less than 2 metres from a neighbour\'s boundary'], ['cover', 'Under a carport, balcony or similar'], ['opening', 'Less than 30 cm from a door, window or vent'], ['none', 'None of these / not sure']] },
+  { k: 'flue_distance', title: 'How far is the boiler from the outside wall the flue goes through?', help: 'Inside your home, measure from the boiler to the outside wall where the flue pipe goes out. This tells us how much flue pipe is needed.', opts: [['<1', 'Under 1 metre'], ['1-2', '1 to 2 metres'], ['2-3', '2 to 3 metres'], ['3+', '3 metres or more'], ['unknown', 'I do not know']], show: (a) => a.flue_outlet !== 'roof' },
+  { k: 'flue_issues', title: 'Do any of these apply to where the flue comes out?', help: 'Pick all that apply. These are safety clearances we check on site.', multi: true, opts: [['ground', 'The flue is less than 2 metres above the ground'], ['boundary', 'The flue is less than 2 metres from a neighbour\'s boundary (their wall or fence)'], ['cover', 'The flue comes out under a carport, balcony or similar roof'], ['opening', 'The flue is less than 30 cm from a window, door or air vent'], ['none', 'None of these / not sure']] },
   { k: 'postcode', title: 'What is the postcode of the property?', help: 'So we can check we cover your area.', text: true },
 ];
-const PIC = {"current_type": "A combi is a boiler on its own with no tank. A system boiler has a hot water cylinder (tank) next to it. A standard (regular) boiler has a cylinder plus a cold water tank in the loft. A back boiler sits behind a fireplace.", "fuel": "Gas meter = mains gas, gas bottle = LPG, oil drop = oil. Most London homes are on mains gas.", "convert": "Left: a combi on its own, so the tank is removed. Right: a new boiler working with the hot water cylinder you already have.", "move": "Left: the new boiler goes in the same spot as the old one. Right: the boiler moves to a new spot.", "property": "Each picture shows a type of home. Pick the closest match.", "bedrooms": "The floor plan is a reminder to count every bedroom, including a small box room.", "bathrooms": "Count every room with a bath or shower, including en-suites.", "baths": "A bath uses a lot of hot water at once, so this helps us pick the right size boiler.", "radiators": "Count every radiator and heated towel rail in the home.", "trvs": "The picture shows a TRV: the numbered dial on the side of a radiator.", "flue_outlet": "Left: the flue pipe goes straight out through an outside wall. Right: it goes up through the roof.", "flue_distance": "Each picture shows the boiler, the outside wall, and the length of flue pipe between them.", "flue_issues": "Each picture shows where the end of the flue is outside: near the ground, near a fence or boundary, under a carport or balcony, or close to a window, door or vent."};   // plain-English explanation of the pictures on each question
+const PIC = {"current_type": "A combi is a boiler on its own with no tank. A system boiler has a hot water cylinder (tank) next to it. A standard (regular) boiler has a cylinder plus a cold water tank in the loft. A back boiler sits behind a fireplace.", "fuel": "Gas meter = mains gas, gas bottle = LPG, oil drop = oil. Most London homes are on mains gas.", "convert": "Left: a combi on its own, so the tank is removed. Right: a new boiler working with the hot water cylinder you already have.", "move": "Left: the new boiler goes in the same spot as the old one. Right: the boiler moves to a new spot.", "property": "Each picture shows a type of home. Pick the closest match.", "bedrooms": "The floor plan is a reminder to count every bedroom, including a small box room.", "baths": "A bath uses a lot of hot water at once, so this helps us pick the right size boiler.", "radiators": "Count every radiator and heated towel rail in the home.", "trvs": "The picture shows a TRV: the numbered dial on the side of a radiator.", "flue_outlet": "Left: the flue pipe runs from the boiler straight out through an outside wall. Right: the flue pipe goes up and out through the roof.", "flue_distance": "Each picture shows the boiler inside your home and the flue pipe running to the outside wall. The red arrow is the distance we are asking about.", "flue_issues": "Each picture shows the end of the flue outside your home. Red arrows mark what is being checked: the height above the ground, the gap to a neighbour's fence or wall, a carport roof above it, and the gap to a window."};   // plain-English explanation of the pictures on each question
 const visibleQ = () => Q.filter((q) => !q.show || q.show(S.a));
 const STAGES = ['Your home', 'Your boiler', 'Your booking', 'Review and pay'];
 const stageOf = (s) => (s === 'results' || s === 'extras' ? 2 : s === 'date' || s === 'details' ? 3 : s === 'review' ? 4 : 1);
@@ -98,7 +97,7 @@ function summaryBox(o, opts = {}) {
 function render() {
   const s = S.step;
   let h = '';
-  if (s === 'start') h = scrStart();
+  if (s === 'start') { const q0 = visibleQ(); const nxt = q0.find((x) => S.a[x.k] === undefined) || q0[0]; S.step = 'q:' + nxt.k; save(); history.replaceState({ step: S.step }, '', location.pathname + location.search + '#' + S.step); h = scrQuestion(nxt.k); }
   else if (s.startsWith('q:')) h = scrQuestion(s.slice(2));
   else if (s === 'quote') h = scrQuote();
   else if (s === 'results') h = scrResults();
@@ -161,7 +160,7 @@ function finishQuestions() {
 }
 function back() {
   const s = S.step;
-  if (s.startsWith('q:')) { const q = visibleQ(), i = q.findIndex((x) => x.k === s.slice(2)); return go(i > 0 ? 'q:' + q[i - 1].k : 'start'); }
+  if (s.startsWith('q:')) { const q = visibleQ(), i = q.findIndex((x) => x.k === s.slice(2)); if (i > 0) return go('q:' + q[i - 1].k); const top = document.getElementById('finder'); if (top) window.scrollTo({ top: Math.max(0, top.offsetTop - 70), behavior: 'smooth' }); return; }
   const m = { results: 'q:postcode', quote: 'q:postcode', extras: 'results', date: 'extras', details: 'date', review: 'details' };
   go(m[s] || 'start');
 }
@@ -186,9 +185,20 @@ function scrResults() {
       <details class="sj-more"><summary>See what is included</summary><ul>${incl}</ul><p class="sj-note">${p.mfr_warranty_upto ? '*' + esc(p.mfr_warranty_terms) + '. Cover lengths vary by model and can change. ' : ''}${instWty ? 'Our own ' + esc(instWty) + '-month installation warranty covers our workmanship. ' : ''}${esc(p.warranty_note)}.</p></details>
       <div class="sj-buy"><div><span class="sj-lbl">Your fixed price including installation</span><span class="sj-price">${money(o.price)}</span>${dealLive() ? `<span class="sj-deal">Or ${money(o.price - C.PROMOS[C.PROMO_DEFAULT].amount)} with code <b>SOUTHWARK100</b>*</span>` : ''}</div><button class="sj-btn" data-choose="${esc(p.id)}">Choose this boiler</button></div></article>`;
   }).join('');
+  // every other boiler that suits this home (right type, big enough), cheapest first, filter by make
+  const all = C.suitable(CAT, S.a, r.options.map((o) => o.product.id));
+  const mks = [...new Set(all.map((x) => x.product.manufacturer))].sort();
+  const mk = mks.includes(S.moreMake) ? S.moreMake : '';
+  const list = all.filter((x) => !mk || x.product.manufacturer === mk), shown = list.slice(0, S.moreN || 8);
+  const tn = { combi: 'Combi', system: 'System', regular: 'Heat only' };
+  const more = all.length ? `<section class="sj-more-all" aria-labelledby="sj-more-h"><h3 id="sj-more-h">More boilers that suit your home <span>(${all.length})</span></h3>
+    <p class="sj-help">All the right type and size for your answers. Every price is fixed and includes fitting.</p>
+    <label class="sj-mkf" for="sj-mk">Show make</label><select id="sj-mk"><option value="">All makes (${all.length})</option>${mks.map((m) => `<option value="${esc(m)}" ${m === mk ? 'selected' : ''}>${esc(m)} (${all.filter((x) => x.product.manufacturer === m).length})</option>`).join('')}</select>
+    <div class="sj-minis">${shown.map((x) => { const p = x.product; return `<article class="sj-mini"><div class="sj-img">${boilerImg(p)}</div><div class="sj-mini-t"><p class="sj-mf">${esc(p.manufacturer)}</p><h4>${esc(p.model)}</h4><p class="sj-mini-s">${esc(tn[p.type] || p.type)} · ${p.kw} kW${p.dhw_flow_lpm ? ' · about ' + p.dhw_flow_lpm + ' L/min hot water' : ''}</p><p class="sj-mini-p">${money(x.price)}<small> fitted</small></p></div><button class="sj-btn sj-ghost sj-mini-b" data-choose="${esc(p.id)}">Choose</button></article>`; }).join('')}</div>
+    ${list.length > shown.length ? `<button type="button" class="sj-btn sj-ghost" data-act="more">Show ${Math.min(8, list.length - shown.length)} more of ${list.length - shown.length}</button>` : ''}</section>` : '';
   const notes = r.notes.length ? `<div class="sj-alert"><b>Good to know</b>${r.notes.map((n) => `<p>${esc(n)}</p>`).join('')}</div>` : '';
   const deal = dealLive() ? `<div class="sj-dealbar"><span class="sj-dealbadge">SAVE<br>£100</span><p><b>Winter deal:</b> book and install by 31 December 2026 and save £100. Enter code <b>SOUTHWARK100</b> when you review your order.</p></div>` : '';
-  return `<div class="sj-card">${header('Your 3 best options', 'Matched to your answers: the right type and size for your home, from three trusted makes. Prices are fixed and include fitting.', true)}${deal}${notes}<div class="sj-curb"><label for="cb">Your current boiler (optional)</label><input id="cb" maxlength="80" autocomplete="off" placeholder="Make and model, e.g. Worcester Greenstar 30i" value="${esc(S.curBoiler || '')}"></div>${cards || '<p>No boilers found.</p>'}${r.options.some((o) => o.product.mfr_warranty_upto) ? `<p class="sj-note">*Manufacturer's warranties are subject to the manufacturer's terms and registration, vary by model and can change. Tap "See what is included" on a boiler for its details.</p>` : ''}${dealLive() ? '<p class="sj-note">*£100 off with code SOUTHWARK100. Code must be entered at checkout and the installation must take place on or before 31 December 2026. One code per order.</p>' : ''}
+  return `<div class="sj-card">${header('Your 3 best options', 'Matched to your answers: the right type and size for your home, from three trusted makes. Prices are fixed and include fitting.', true)}${deal}${notes}<div class="sj-curb"><label for="cb">Your current boiler (optional)</label><input id="cb" maxlength="80" autocomplete="off" placeholder="Make and model, e.g. Worcester Greenstar 30i" value="${esc(S.curBoiler || '')}"></div>${cards || '<p>No boilers found.</p>'}${more}${r.options.some((o) => o.product.mfr_warranty_upto) ? `<p class="sj-note">*Manufacturer's warranties are subject to the manufacturer's terms and registration, vary by model and can change. Tap "See what is included" on a boiler for its details.</p>` : ''}${dealLive() ? '<p class="sj-note">*£100 off with code SOUTHWARK100. Code must be entered at checkout and the installation must take place on or before 31 December 2026. One code per order.</p>' : ''}
   <div class="sj-save"><details><summary>Save this quote for later</summary><form id="sj-save" novalidate><label for="se">Your email</label><input id="se" type="email" autocomplete="email" inputmode="email"><p class="sj-err" id="se-e" role="alert"></p><button class="sj-btn sj-ghost" type="submit">Email me this quote</button></form></details></div>
   <p class="sj-note">Need to talk first? Call <a href="tel:+44${CAT.settings.phone.replace(/^0/, '').replace(/\s/g, '')}">${esc(CAT.settings.phone)}</a>.</p></div>`;
 }
@@ -256,7 +266,7 @@ function scrDetails() {
   <fieldset><legend>Is this a rental property?</legend><div class="sj-grid"><button type="button" class="sj-opt ${S.rental === 'no' ? 'on' : ''}" data-rent="no">No, I own it</button><button type="button" class="sj-opt ${S.rental === 'yes' ? 'on' : ''}" data-rent="yes">Yes, it is rented</button></div><p class="sj-err" id="rent-e" role="alert"></p></fieldset>
   <h3 class="sj-gh">Your details</h3>${f('cf', 'First name', c.first, 'autocomplete="given-name"')}${f('cl', 'Surname', c.last, 'autocomplete="family-name"')}${f('ce', 'Email', c.email, 'type="email" autocomplete="email" inputmode="email"')}${f('cp', 'Mobile number', c.phone, 'type="tel" autocomplete="tel" inputmode="tel"')}
   <label for="cn">Anything we should know? (optional)</label><textarea id="cn" rows="3" maxlength="500" placeholder="Parking, access, pets">${esc(S.notes)}</textarea>
-  <button class="sj-btn" type="submit">Continue: review your order</button></form></div>`;
+  <button class="sj-btn" type="submit">Continue to payment</button></form></div>`;
 }
 
 // ---------- review ----------
@@ -287,10 +297,19 @@ function scrReview() {
 }
 
 // ---------- confirmation ----------
+// After payment the customer only chooses a password: the sign-up page reads these details (same browser tab only, cleared after use).
+function prefillAccount() {
+  try {
+    const c = S.cust || {}, ad = c.addr || {};
+    sessionStorage.setItem('sh_order_prefill', JSON.stringify({ name: [c.first, c.last].filter(Boolean).join(' '), email: c.email || '', phone: c.phone || '',
+      line1: ad.line1 || '', line2: ad.line2 || '', town: ad.town || '', postcode: ad.postcode || '', at: Date.now() }));
+  } catch (e) { /* private mode: the normal form still works */ }
+}
 function portalBox() {
   const em = (S.cust && S.cust.email) || '';
-  const q = 'login?signup=1' + (C.isEmail(em) ? '&email=' + encodeURIComponent(em.trim()) : '');
-  return `<div class="sj-portal"><h3>Create your customer account</h3><p>Your installation is already saved to your account. Sign up${em ? ' with <b>' + esc(em) + '</b>' : ' with the same email you used for this order'} and you can see your job, book appointments, view invoices and certificates, pay and contact us, all in one place.</p><a class="sj-btn" href="${esc(q)}">Create my account</a><p class="sj-note">Already have an account? <a href="login">Sign in</a>.</p></div>`;
+  prefillAccount();
+  const q = 'login?signup=1&from=order' + (C.isEmail(em) ? '&email=' + encodeURIComponent(em.trim()) : '');
+  return `<div class="sj-portal"><h3>Last step: create your account</h3><p>Your details are already saved from your order, so you only need to choose a password. Then you can see your installation, invoices and certificates, book visits and contact us, all in one place.</p><a class="sj-btn" href="${esc(q)}">Choose a password</a><p class="sj-note">Already have an account? <a href="login">Sign in</a>.</p></div>`;
 }
 function scrDone() {
   const d = S.done || {};
@@ -299,7 +318,7 @@ function scrDone() {
   ${d.ref ? `<p class="sj-ref">Reference <b>${esc(d.ref)}</b></p>` : ''}
   <p>${paid ? 'Your payment was received.' : 'We have your booking request.'} ${d.date ? `Your installation date is <b>${esc(d.dateText)}</b>.` : ''}</p>
   ${d.product ? `<div class="sj-sum"><div class="sj-sum-t">${esc(d.product)}</div>${d.promo ? `<div class="sj-row sj-disc"><span>Promo code ${esc(d.promo)}</span><b>included</b></div>` : ''}<div class="sj-row sj-tot"><span>Total fixed price</span><b>${money(d.total)}</b></div></div>` : ''}
-  ${portalBox()}
+  ${paid ? portalBox() : ''}
   <h3>What happens next</h3><ol class="sj-steps"><li>We check your order and contact you to confirm your date and arrival time.</li><li>If anything on site needs extra work, we agree the price with you before we start.</li><li>Your Gas Safe registered engineer fits your new boiler.</li></ol>
   <p class="sj-note">Questions? Call <a href="tel:+44${CAT.settings.phone.replace(/^0/, '').replace(/\s/g, '')}">${esc(CAT.settings.phone)}</a>.</p><a class="sj-btn sj-ghost" href="./">Back to the home page</a></div>`;
 }
@@ -322,6 +341,8 @@ function bind() {
   on('[data-act="to-date"]', () => go('date'));
   on('[data-act="to-details"]', () => { if (S.date) go('details'); });
   on('[data-go]', (el) => go(el.dataset.go));
+  const mkSel = root.querySelector('#sj-mk'); if (mkSel) mkSel.addEventListener('change', () => { S.moreMake = mkSel.value; S.moreN = 8; save(); render(); });
+  on('[data-act="more"]', () => { S.moreN = (S.moreN || 8) + 8; save(); render(); });
   on('[data-choose]', (el) => { S.product = el.dataset.choose; S.extras = {}; save(); go('extras'); });
   on('[data-tog]', (el) => { const id = el.dataset.tog, x = CAT.extras.find((e) => e.id === id); if (S.extras[id]) delete S.extras[id]; else { if (x.exclusive) CAT.extras.filter((e) => e.group === x.group).forEach((e) => delete S.extras[e.id]); S.extras[id] = 1; } save(); keepScroll(render); });
   on('[data-inc]', (el) => { const id = el.dataset.inc, x = CAT.extras.find((e) => e.id === id); S.extras[id] = Math.min(x.max, (S.extras[id] || 0) + 1); save(); keepScroll(render); });
@@ -332,7 +353,7 @@ function bind() {
   const pc = root.querySelector('#sj-pc');
   if (pc) pc.addEventListener('submit', (e) => { e.preventDefault(); const v = pc.postcode.value.trim().toUpperCase(); if (!C.isPostcode(v)) { root.querySelector('#pc-e').textContent = 'Please enter a full UK postcode, for example SE16 7SZ.'; return; } S.a.postcode = v; finishQuestions(); });
   const sv = root.querySelector('#sj-save');
-  if (sv) sv.addEventListener('submit', async (e) => { e.preventDefault(); const em = sv.querySelector('#se').value.trim(); if (!C.isEmail(em)) { sv.querySelector('#se-e').textContent = 'Please enter a valid email address.'; return; } sv.querySelector('button').disabled = true; const ok = await sendForm({ email: em, name: 'Saved boiler quote', message: quoteText('SAVED QUOTE (customer asked for a copy)') }); sv.innerHTML = ok ? '<p><b>Thanks.</b> We have your request and will email your quote.</p>' : '<p class="sj-err">Sorry, that did not send. Please call us instead.</p>'; });
+  if (sv) sv.addEventListener('submit', async (e) => { e.preventDefault(); const em = sv.querySelector('#se').value.trim(); if (!C.isEmail(em)) { sv.querySelector('#se-e').textContent = 'Please enter a valid email address.'; return; } sv.querySelector('button').disabled = true; const ok = await sendForm({ email: em, name: 'Saved quote - ' + em, message: quoteText('SAVED QUOTE (customer asked for a copy)') }); sv.innerHTML = ok ? '<p><b>Thanks.</b> We have your request and will email your quote.</p>' : '<p class="sj-err">Sorry, that did not send. Please call us instead.</p>'; });
   const ld = root.querySelector('#sj-lead');
   if (ld) ld.addEventListener('submit', async (e) => { e.preventDefault(); const name = ld.ln.value.trim(), phone = ld.lp.value.trim(), email = ld.le.value.trim(); S.cust = { ...S.cust, name, phone, email }; save(); const er = root.querySelector('#l-e'); if (!name || !C.isPhone(phone) || !C.isEmail(email)) { er.textContent = 'Please check your name, phone number and email.'; return; } ld.querySelector('button').disabled = true; const ok = await sendForm({ name, email, phone, postcode: S.a.postcode, message: quoteText('PERSONAL PRICE REQUEST') + '\nReasons: ' + C.assess(S.a).why.join(', ') }); if (ok) { S.done = { mode: 'lead' }; go('done'); } else { er.textContent = 'Sorry, that did not send. Please call ' + CAT.settings.phone + '.'; ld.querySelector('button').disabled = false; } });
   const dt = root.querySelector('#sj-det');
@@ -385,10 +406,17 @@ function quoteText(tag) {
   return tag + '\n' + lines + (opts ? '\nOptions shown: ' + opts : '') + (o && o.ok ? '\nChosen: ' + o.product.manufacturer + ' ' + o.product.model + ' total ' + money(o.total) : '');
 }
 async function sendForm(f) {
-  try {
-    const r = await fetch(FORM, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ _subject: 'Boiler journey: ' + (f.name || ''), category: 'boiler-journey', service: 'Boiler installation', ...f }) });
-    return r.ok;
-  } catch (e) { return false; }
+  // Saves the enquiry in the Southwark Heating app (new customer + Enquiry job). No third-party form service.
+  const id = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (ch) => { const r = Math.random() * 16 | 0; return (ch === 'x' ? r : (r & 3 | 8)).toString(16); });
+  const body = JSON.stringify({ enquiry_id: id, category: 'Heating & Boilers', service: 'Boiler installation', source: 'boiler-finder', ...f });
+  for (let i = 0; i < 2; i++) {
+    try {
+      const r = await fetch(ENQ, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=UTF-8' }, body });
+      if (r.ok) return true;
+      if (r.status >= 400 && r.status < 500) return false;
+    } catch (e) { /* retry once */ }
+  }
+  return false;
 }
 
 
@@ -410,7 +438,7 @@ function sendLead() {
   const c = S.cust, key = S.oid + '|' + S.product + '|' + S.date + '|' + JSON.stringify(S.extras) + '|' + (S.promo || '');
   if (S.leadSent === key) return; S.leadSent = key; save();
   if (API) callApi('lead').catch(() => {});
-  sendForm({ name: c.first + ' ' + c.last, email: c.email, phone: c.phone, postcode: (c.addr || {}).postcode, message: leadMsg('BOILER INSTALL LEAD - details entered, NOT paid yet (chase up)') });
+  else sendForm({ name: c.first + ' ' + c.last, email: c.email, phone: c.phone, postcode: (c.addr || {}).postcode, message: leadMsg('BOILER INSTALL LEAD - details entered, NOT paid yet (chase up)') });
 }
 
 async function placeOrder() {
@@ -427,9 +455,8 @@ async function placeOrder() {
     if (API) {
       const { ok, j } = await callApi('order');
       if (!ok) { if (j && j.ref) { S.done = { ...summary, ref: j.ref, mode: 'request' }; save(); } throw new Error(j && j.error || 'failed'); }
-      await sendForm({ name: c.first + ' ' + c.last, email: c.email, phone: c.phone, postcode: ad.postcode, message: leadMsg('BOILER INSTALL - customer went to pay ' + (S.pay === 'deposit' && o.total > CAT.settings.deposit ? 'the deposit' : 'in full') + ' (ref ' + j.ref + ')') });
       S.done = { ...summary, ref: j.ref, mode: j.mode === 'checkout' ? 'paid' : 'request' }; save();
-      if (j.mode === 'checkout' && j.url) { window.location.href = j.url; return; }
+      if (j.mode === 'checkout' && j.url) { prefillAccount(); window.location.href = j.url; return; }
     } else {
       const ref = 'REQ-' + Date.now().toString(36).toUpperCase().slice(-6);
       const msg = quoteText('BOOKING REQUEST (no payment taken)') + '\nInstall date: ' + S.date + '\nAddress: ' + [ad.line1, ad.line2, ad.town, ad.postcode].filter(Boolean).join(', ') + '\nRental: ' + S.rental + '\nNotes: ' + S.notes + '\nOrder lines: ' + o.lines.map((l) => l.label + ' ' + money(l.amount)).join('; ') + '\nTotal: ' + money(o.total) + '\nRef: ' + ref;
@@ -460,5 +487,10 @@ async function placeOrder() {
   if (['review'].includes(S.step) && (!S.date || !S.cust.email)) S.step = 'start';
   history.replaceState({ step: S.step }, '', location.pathname + location.search + (S.step === 'start' ? '' : '#' + S.step));
   render();
-  document.querySelectorAll('[data-start]').forEach((a) => a.addEventListener('click', () => { if (S.step === 'start') return; }));
+  // go straight to the journey: bring the first question into view (clear of the phone's address bar)
+  if (S.step.startsWith('q:') || S.step === 'results') {
+    const top = document.getElementById('finder');
+    if (top) requestAnimationFrame(() => window.scrollTo({ top: Math.max(0, top.offsetTop - 70), behavior: 'instant' in document.documentElement.style ? 'auto' : 'auto' }));
+  }
+  document.querySelectorAll('[data-start]').forEach((a) => a.addEventListener('click', (e) => { const top = document.getElementById('finder'); if (top) { e.preventDefault(); window.scrollTo({ top: Math.max(0, top.offsetTop - 70), behavior: 'smooth' }); } }));
 })();
