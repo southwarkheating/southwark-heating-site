@@ -202,8 +202,8 @@ function signUp(m){var inv=INVD;top();V.innerHTML=backBtn()+'<div class="pcard">
 '<form id="fup" class="pf" novalidate><label for="nm">Full name</label><input id="nm" autocomplete="name" required>'+
 '<label for="em">Email address</label><input id="em" type="email" autocomplete="email" inputmode="email" autocapitalize="none" required>'+
 (inv?'':'<label for="ph">Phone number</label><input id="ph" type="tel" autocomplete="tel" inputmode="tel">'+
-'<label for="ad1">Address line 1</label><input id="ad1" autocomplete="address-line1" placeholder="e.g. 10 Coniston Court"><label for="ad2">Address line 2</label><input id="ad2" autocomplete="address-line2" placeholder="e.g. Eleanor Close">'+
-'<label for="ad3">Town / City</label><input id="ad3" autocomplete="address-level2" placeholder="e.g. London"><label for="ad4">County</label><input id="ad4" autocomplete="address-level1"><label for="pc">Postcode</label><input id="pc" autocomplete="postal-code" autocapitalize="characters">')+
+'<label for="ad1">Address line 1</label><input id="ad1" autocomplete="address-line1"><label for="ad2">Address line 2</label><input id="ad2" autocomplete="address-line2">'+
+'<label for="ad3">Town / City</label><input id="ad3" autocomplete="address-level2"><label for="ad4">County</label><input id="ad4" autocomplete="address-level1"><label for="pc">Postcode</label><input id="pc" autocomplete="postal-code" autocapitalize="characters">')+
 '<label for="pw">Choose a password</label><input id="pw" type="password" autocomplete="new-password" minlength="8" required><small class="pmut">At least 8 characters.</small>'+
 '<label for="pw2">Confirm password</label><input id="pw2" type="password" autocomplete="new-password" required>'+
 '<button class="btn btn-red" type="submit">Create account</button></form><div class="plinks"><button type="button" id="goi">Already have an account? Log in</button></div></div>';
@@ -475,6 +475,22 @@ sb.auth.onAuthStateChange(function(ev,s){setTimeout(function(){
 if(REC)setTimeout(function(){if(REC&&!document.getElementById('fnp'))newPass()},2500);
 })();
 </script>
+<script>/* After a boiler order is paid: fill the sign-up form from the order so the customer only chooses a password */(function(){if(!/[?&]from=order/.test(location.search))return;var P=null;try{P=JSON.parse(sessionStorage.getItem('sh_order_prefill')||'null')}catch(e){}if(!P||!P.email||Date.now()-(P.at||0)>2*864e5)return;
+var n=0,t=setInterval(function(){var f=document.getElementById('fup');if(!f){if(++n>60)clearInterval(t);return}clearInterval(t);
+var set=function(id,val){var i=document.getElementById(id);if(i&&val)i.value=val};set('nm',P.name);set('em',P.email);set('ph',P.phone);set('ad1',P.line1);set('ad2',P.line2);set('ad3',P.town);set('pc',P.postcode);
+var ids=['nm','ph','ad1','ad2','ad3','ad4','pc'].filter(function(id){return id!=='nm'||P.name}),hid=[];
+ids.forEach(function(id){var i=document.getElementById(id);if(!i)return;var l=f.querySelector('label[for="'+id+'"]');[l,i].forEach(function(x){if(x){x.style.display='none';hid.push(x)}})});
+var esc=function(x){return String(x||'').replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})};
+var addr=[P.line1,P.line2,P.town,P.postcode].filter(Boolean).join(', ');
+var box=document.createElement('div');box.className='pcard';box.style.cssText='margin:0 0 14px;padding:12px 14px;background:#f4f7fb';
+box.innerHTML='<p style="margin:0 0 6px"><b>Thanks for your order.</b> We have your details from it, so just choose a password below.</p><p class="pmut" style="margin:0">'+esc(P.name)+(P.phone?' &middot; '+esc(P.phone):'')+(addr?'<br>'+esc(addr):'')+'</p><button type="button" id="pfedit" style="margin-top:8px;background:none;border:0;padding:0;color:inherit;text-decoration:underline;cursor:pointer;font:inherit">Change these details</button>';
+f.insertBefore(box,f.firstChild);
+var h=document.querySelector('#fup')&&document.querySelector('.pcard h1');if(h)h.textContent='Choose your password';
+var pm=document.querySelector('.pcard .pmut');if(pm&&pm.parentNode&&pm.parentNode.querySelector('h1'))pm.textContent='Your account links to your boiler order automatically.';
+document.getElementById('pfedit').addEventListener('click',function(){hid.forEach(function(x){x.style.display=''});box.querySelector('#pfedit').remove()});
+var pw=document.getElementById('pw');if(pw)setTimeout(function(){try{pw.focus({preventScroll:false})}catch(e){}},50);
+f.addEventListener('submit',function(){try{sessionStorage.removeItem('sh_order_prefill')}catch(e){}});
+},150)})();</script>
 <script>/* V6: ?signup=1 opens the existing Create account screen (does not change the sign-in code) */(function(){if(!/[?&]signup=1/.test(location.search))return;var n=0,t=setInterval(function(){var b=document.getElementById("gos");if(b){clearInterval(t);b.click();var m=/[?&]email=([^&]+)/.exec(location.search),e=m?decodeURIComponent(m[1]):"";if(/^[^\s@<>"]+@[^\s@<>"]+\.[^\s@<>"]{2,}$/.test(e))setTimeout(function(){var i=document.getElementById("em");if(i&&!i.value)i.value=e},60)}else if(++n>40)clearInterval(t)},150)})();</script>
 </body>
 </html>
