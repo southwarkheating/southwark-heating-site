@@ -130,6 +130,7 @@ input,select,textarea{font:inherit;font-size:16px;padding:12px;border:1px solid 
 .cpt thead th small{display:block;font-weight:600;color:#ffd3cc}
 .cpt .y{color:#1b7a3a;font-weight:800}.cpt .n{color:#8a94a3}
 .cptw{overflow-x:auto;-webkit-overflow-scrolling:touch}
+@media(max-width:480px){.cpt{font-size:.85rem}.cpt th,.cpt td{padding:10px 5px}.cpt th:first-child,.cpt td:first-child{padding-left:8px}.cpt thead th small{font-size:.7rem}}
 .cpg{display:grid;gap:16px;margin-top:16px}@media(min-width:860px){.cpg{grid-template-columns:repeat(3,1fr)}}
 .cpc{background:#fff;border:2px solid var(--line);border-radius:16px;padding:20px}
 .cpc.pop{border-color:var(--red)}
@@ -147,19 +148,19 @@ input,select,textarea{font:inherit;font-size:16px;padding:12px;border:1px solid 
 
 <section class="sec"><div class="wrap"><h2>Choose your plan</h2><p>All plans are paid monthly with a 12-month minimum term. Every plan includes your annual boiler service by a Gas Safe registered engineer.</p>
 <div class="cpg">
-<div class="cpc"><h3>Bronze</h3><div class="pr">&pound;9.99<small> / month</small></div><ul><li>Annual boiler service included</li><li>10% off repairs and parts</li><li>Priority booking over non-members</li></ul><div class="cpm"><b>The maths:</b> a boiler service on its own is &pound;80. Bronze costs &pound;119.88 a year and adds 10% off any repairs and parts, plus priority booking.</div><p><a class="btn btn-dark" href="#join" data-plan="Bronze">Choose Bronze</a></p></div>
-<div class="cpc pop"><span class="cptag">Most popular</span><h3>Silver</h3><div class="pr">&pound;12.99<small> / month</small></div><ul><li>Everything in Bronze</li><li>1 free repair visit a year (labour only, up to &pound;90)</li><li>15% off parts</li><li>First available appointment within 24 hours</li></ul><div class="cpm"><b>The maths:</b> &pound;80 service + &pound;90 repair visit = &pound;170 of included work for &pound;155.88 a year, before any parts discount.</div><p><a class="btn btn-red" href="#join" data-plan="Silver">Choose Silver</a></p></div>
-<div class="cpc"><h3>Gold</h3><div class="pr">&pound;16.99<small> / month</small></div><ul><li>Everything in Silver</li><li>2 free repair visits a year (labour only, up to &pound;90 each)</li><li>20% off parts</li><li>Free priority emergency add-on on every call-out (normally +&pound;50)</li></ul><div class="cpm"><b>The maths:</b> &pound;80 service + 2 &times; &pound;90 repair visits = &pound;260 of included work for &pound;203.88 a year, plus the &pound;50 priority add-on free each time.</div><p><a class="btn btn-dark" href="#join" data-plan="Gold">Choose Gold</a></p></div>
+<div class="cpc"><h3>Bronze</h3><div class="pr">&pound;9.99<small> / month</small></div><ul><li>Annual boiler service included</li><li>10% off repairs and parts</li><li>Priority booking over non-members</li></ul><div class="cpm"><b>The maths:</b> a boiler service on its own is &pound;90. Bronze costs &pound;119.88 a year and adds 10% off any repairs and parts, plus priority booking.</div><p><a class="btn btn-dark" href="#join" data-plan="Bronze">Choose Bronze</a></p></div>
+<div class="cpc pop"><span class="cptag">Most popular</span><h3>Silver</h3><div class="pr">&pound;12.99<small> / month</small></div><ul><li>Everything in Bronze</li><li>1 free repair visit a year (labour only, up to &pound;90)</li><li>15% off parts</li><li>First available appointment within 24 working hours</li></ul><div class="cpm"><b>The maths:</b> &pound;90 service + &pound;90 repair visit = &pound;180 of included work for &pound;155.88 a year, before any parts discount.</div><p><a class="btn btn-red" href="#join" data-plan="Silver">Choose Silver</a></p></div>
+<div class="cpc"><h3>Gold</h3><div class="pr">&pound;16.99<small> / month</small></div><ul><li>Everything in Silver</li><li>2 free repair visits a year (labour only, up to &pound;90 each)</li><li>20% off parts</li><li>Free priority emergency add-on on every call-out (normally +&pound;50)</li></ul><div class="cpm"><b>The maths:</b> &pound;90 service + 2 &times; &pound;90 repair visits = &pound;270 of included work for &pound;203.88 a year, plus the &pound;50 priority add-on free each time.</div><p><a class="btn btn-dark" href="#join" data-plan="Gold">Choose Gold</a></p></div>
 </div>
 
 <h2 style="margin-top:32px">Compare the plans</h2>
 <div class="cptw"><table class="cpt"><thead><tr><th>What you get</th><th>Bronze<small>&pound;9.99/mo</small></th><th>Silver<small>&pound;12.99/mo</small></th><th>Gold<small>&pound;16.99/mo</small></th></tr></thead><tbody>
-<tr><td>Annual boiler service (worth &pound;80)</td><td class="y">&#10003;</td><td class="y">&#10003;</td><td class="y">&#10003;</td></tr>
+<tr><td>Annual boiler service (worth &pound;90)</td><td class="y">&#10003;</td><td class="y">&#10003;</td><td class="y">&#10003;</td></tr>
 <tr><td>Free repair visits a year (labour only, up to &pound;90 each)</td><td class="n">&ndash;</td><td>1</td><td>2</td></tr>
-<tr><td>Discount on repairs</td><td>10%</td><td class="n">&ndash;</td><td class="n">&ndash;</td></tr>
+<tr><td>Discount on repair labour</td><td>10%</td><td>10%</td><td>10%</td></tr>
 <tr><td>Discount on parts</td><td>10%</td><td>15%</td><td>20%</td></tr>
 <tr><td>Priority booking over non-members</td><td class="y">&#10003;</td><td class="y">&#10003;</td><td class="y">&#10003;</td></tr>
-<tr><td>First available appointment within 24 hours</td><td class="n">&ndash;</td><td class="y">&#10003;</td><td class="y">&#10003;</td></tr>
+<tr><td>First available appointment within 24 working hours</td><td class="n">&ndash;</td><td class="y">&#10003;</td><td class="y">&#10003;</td></tr>
 <tr><td>Priority emergency add-on (normally +&pound;50)</td><td class="n">&ndash;</td><td class="n">&ndash;</td><td class="y">Free</td></tr>
 <tr><td>Cost per year</td><td>&pound;119.88</td><td>&pound;155.88</td><td>&pound;203.88</td></tr>
 </tbody></table></div>
@@ -205,7 +206,7 @@ input,select,textarea{font:inherit;font-size:16px;padding:12px;border:1px solid 
 <h3>What counts as a free repair visit?</h3><p>The labour for one repair visit, up to &pound;90, which is our standard first-hour charge. Parts are extra, and always quoted and agreed before work starts.</p>
 <h3>Do unused free visits roll over?</h3><p>No. Free repair visits reset at the start of each plan year.</p>
 <h3>Can I cancel?</h3><p>Yes. You can cancel within 14 days of joining for a full refund, or at the end of your 12-month term. If you leave early you only pay for the services you&rsquo;ve actually had, at our normal prices, less what you&rsquo;ve paid. There is no exit fee.</p>
-<h3>Does the plan include a CP12 gas safety certificate?</h3><p>Not as standard. Landlords can add a CP12 at our usual price of &pound;80, or &pound;140 for a CP12 plus boiler service.</p>
+<h3>Does the plan include a CP12 gas safety certificate?</h3><p>Not as standard. Landlords can add a CP12 at our usual price of &pound;90, or &pound;160 for a CP12 plus boiler service.</p>
 <h3>How do I book once I&rsquo;m a member?</h3><p>Call <a href="tel:+447988991963">07988 991963</a> or log in to your <a href="login">customer account</a>. We&rsquo;ll apply your free visits and discounts for you.</p>
 </div></section>
 <script>(function(){
