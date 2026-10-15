@@ -48,7 +48,7 @@ input,select,textarea{font:inherit;font-size:16px;padding:12px;border:1px solid 
 .grid3{grid-template-columns:repeat(3,1fr)}.grid2{grid-template-columns:1fr 1fr}.grid4{grid-template-columns:repeat(4,1fr)}.hero{padding:80px 0}.formgrid{grid-template-columns:1.4fr 1fr;gap:36px}}
 
 .hero{background:linear-gradient(135deg,#0c1f38 0%,#112B4F 55%,#1d4a85 100%);border-bottom:6px solid var(--red)}
-.herogrid{display:grid;gap:24px;align-items:center}.badge{width:230px;max-width:70%;height:auto;margin:0 auto;display:block;filter:drop-shadow(0 8px 20px rgba(0,0,0,.35))}.badge.sm{float:none;width:180px;margin:0 auto 20px}
+.herogrid{display:grid;gap:24px;align-items:center}.badge{width:230px;max-width:70%;height:auto;margin:0 auto;display:block}.badge.sm{float:none;width:180px;margin:0 auto 20px}
 .pagehead{background:linear-gradient(135deg,#0c1f38,#1d4a85)}.pagehead.red{background:linear-gradient(135deg,#8e1b1b,#C42727)}
 .card{border-top:4px solid var(--red);box-shadow:0 2px 10px rgba(17,43,79,.08)}
 .ico{width:48px;height:48px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;margin-bottom:12px}.ico svg{width:26px;height:26px;fill:none;stroke:#fff;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
@@ -67,7 +67,7 @@ input,select,textarea{font:inherit;font-size:16px;padding:12px;border:1px solid 
 .ticks{list-style:none;padding:0;margin:14px 0 20px}.ticks li{padding:4px 0 4px 30px;position:relative}.ticks li::before{content:"";position:absolute;left:2px;top:.6em;width:15px;height:8px;border-left:3px solid #ff8a7a;border-bottom:3px solid #ff8a7a;transform:rotate(-45deg)}
 .boilerwrap{position:relative;display:flex;justify-content:center;padding:10px 0}
 .boilerwrap::before{content:"";position:absolute;inset:4% 8%;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.38),rgba(255,255,255,0) 70%)}
-.boilerimg{position:relative;width:min(58%,240px);height:auto;filter:drop-shadow(0 18px 24px rgba(0,0,0,.5));animation:fl 5s ease-in-out infinite}
+.boilerimg{position:relative;width:min(58%,240px);height:auto;animation:fl 5s ease-in-out infinite}
 @keyframes fl{50%{transform:translateY(-8px)}}@media(prefers-reduced-motion:reduce){.boilerimg{animation:none}}
 .badge2{position:absolute;right:4%;top:4%;width:112px;height:112px;border-radius:50%;background:var(--red);border:4px solid #fff;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;box-shadow:0 8px 18px rgba(0,0,0,.35);transform:rotate(8deg);line-height:1.1;z-index:2}.badge2 b{font-size:1.5rem}.badge2 span{font-size:.62rem;letter-spacing:.06em;text-transform:uppercase;font-weight:700}
 .stepn{display:inline-flex;width:32px;height:32px;border-radius:50%;background:var(--red);color:#fff;align-items:center;justify-content:center;font-size:1rem;margin-right:10px}
@@ -120,7 +120,7 @@ input,select,textarea{font:inherit;font-size:16px;padding:12px;border:1px solid 
 <p>We do not sell your personal information. We only send marketing messages if you have agreed to receive them.</p>
 <h2>Payments</h2><p>Online payments are taken by Stripe on its own secure payment page. We do not see or store your full card details. Stripe handles the information you give it under its own privacy policy, and we can see records of payments made in our Stripe account.</p>
 <h2>Saving your details on your device</h2><p>To stop you having to start again if the page is refreshed or something goes wrong, the booking and boiler offer forms save what you type in your browser&rsquo;s local storage on your own device. This information stays on your device and is not sent to us until you submit the form. Details you have not yet sent are kept for up to 24 hours, and details you have already sent are kept for up to 6 hours so that you can retry payment. They are removed when you reach our booking confirmation page, or when you choose &ldquo;Clear saved details&rdquo; or &ldquo;Start a new booking&rdquo;. You can also clear them by clearing your browser&rsquo;s site data. Our homepage also uses your browser&rsquo;s session storage to remember that you have closed the offer pop-up during your visit.</p>
-<h2>Who we share it with</h2><p>We use trusted providers to run our business: our payment provider (Stripe), our website host (GitHub Pages), our database and customer account provider (Supabase), which also receives and stores the enquiries and bookings you send through this website, and our email provider (IONOS). They process information only to provide their services. Some providers may process data outside the UK; where they do, we rely on appropriate safeguards. We may also share information where the law requires it.</p>
+<h2>Who we share it with</h2><p>We use trusted providers to run our business: the form service used to deliver website enquiries and bookings to us (Formspree), our payment provider (Stripe), our website host (GitHub Pages), our database and customer account provider (Supabase) and our email provider (IONOS). They process information only to provide their services. Some providers may process data outside the UK; where they do, we rely on appropriate safeguards. We may also share information where the law requires it.</p>
 <h2>Cookies</h2><p>We do not set advertising or analytics cookies, and this website does not use analytics or advertising tools. Our third-party providers (for example Stripe on its payment pages) may use their own cookies, which are covered by their own policies. If we add any cookies or tracking in future, we will update this policy and ask for consent where required.</p>
 <h2>How long we keep it</h2><p>We keep personal information only for as long as we need it for the purposes above, including to meet legal, accounting and regulatory requirements.</p>
 <h2>Your rights</h2><p>Under UK data protection law you can ask to access, correct or delete your information, restrict or object to our use of it, and request a copy of it. To do so, contact us using the details above.</p>
@@ -151,21 +151,17 @@ document.getElementById('fmsg').textContent='The online form is not active yet. 
 if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
 var st=document.createElement('style');
 st.textContent='.vi-o{position:fixed;inset:0;pointer-events:none;z-index:2147483000;overflow:hidden;transition:opacity .35s ease}'+
-'.vi-v{position:absolute;left:0;top:56%;width:min(72vw,460px);height:auto;aspect-ratio:1400/597;transform:translateX(-110%);animation:viDrive 1.6s cubic-bezier(.55,.05,.4,1) forwards;filter:drop-shadow(0 10px 12px rgba(17,43,79,.25))}'+
+'.vi-v{position:absolute;left:0;top:56%;width:min(72vw,460px);height:auto;transform:translateX(-110%);animation:viDrive 1.6s cubic-bezier(.55,.05,.4,1) forwards;filter:drop-shadow(0 10px 12px rgba(17,43,79,.25))}'+
 '.vi-v img{display:block;width:100%;height:auto}.vi-v>img:first-child{animation:viBob .32s ease-in-out infinite alternate}'+
-'.vi-v .vi-w{position:absolute;width:10.569%;height:auto;aspect-ratio:1/1;transform:translate(-50%,-50%);animation:viSpin .42s linear infinite}@keyframes viSpin{to{transform:translate(-50%,-50%) rotate(360deg)}}'+
+'.vi-v .vi-w{position:absolute;width:10.569%;height:auto;transform:translate(-50%,-50%);animation:viSpin .42s linear infinite}@keyframes viSpin{to{transform:translate(-50%,-50%) rotate(360deg)}}'+
 '.vi-l{position:absolute;right:96%;height:3px;border-radius:3px;background:linear-gradient(90deg,rgba(17,43,79,0),rgba(17,43,79,.35))}'+
 '@keyframes viDrive{0%{transform:translateX(-110%)}100%{transform:translateX(calc(100vw + 10%))}}@keyframes viBob{to{transform:translateY(-2px)}}';
 document.head.appendChild(st);
 var o=document.createElement('div');o.className='vi-o';o.setAttribute('aria-hidden','true');
-o.innerHTML='<div class="vi-v"><img src="southwark-van.webp" alt="" width="1400" height="597"><img class="vi-w" src="southwark-van-wheel1.webp" alt="" width="148" height="148" style="left:17.059%;top:76.415%"><img class="vi-w" src="southwark-van-wheel2.webp" alt="" width="148" height="148" style="left:83.171%;top:76.415%"><i class="vi-l" style="top:32%;width:38%"></i><i class="vi-l" style="top:50%;width:55%"></i><i class="vi-l" style="top:68%;width:30%"></i></div>';
+o.innerHTML='<div class="vi-v"><img src="southwark-van.webp" alt=""><img class="vi-w" src="southwark-van-wheel1.webp" alt="" style="left:17.059%;top:76.415%"><img class="vi-w" src="southwark-van-wheel2.webp" alt="" style="left:83.171%;top:76.415%"><i class="vi-l" style="top:32%;width:38%"></i><i class="vi-l" style="top:50%;width:55%"></i><i class="vi-l" style="top:68%;width:30%"></i></div>';
+document.body.appendChild(o);
 var done=false;function finish(){if(done)return;done=true;if(o.parentNode)o.parentNode.removeChild(o);if(st.parentNode)st.parentNode.removeChild(st);}
-/* Wait until the van and both wheels have loaded, so the wheels sit on the van on the very first visit. If they are slow, skip the intro. */
-var srcs=['southwark-van.webp','southwark-van-wheel1.webp','southwark-van-wheel2.webp'],left=srcs.length,started=false;
-function go(){if(started||done)return;started=true;document.body.appendChild(o);setTimeout(function(){o.style.opacity='0'},1650);setTimeout(finish,2200);}
-function one(){if(--left<=0)go();}
-srcs.forEach(function(u){var im=new Image(),c=false,ok=function(){if(c)return;c=true;one();};im.onload=ok;im.onerror=finish;im.src=u;if(im.complete&&im.naturalWidth)ok();});
-setTimeout(function(){if(!started)finish();},2500);
+setTimeout(function(){o.style.opacity='0'},1650);setTimeout(finish,2200);
 })();
 </script>
 </body>
