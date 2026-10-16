@@ -350,18 +350,27 @@ function jstat(j){var s=String(j.status||'Booked');
  if(/await|parts|hold/i.test(s))return 'This job is on hold while we wait for parts or information. We’ll be in touch.';
  return j.job_date?'Your visit is booked for '+DT(j.job_date)+(j.job_time?' at '+j.job_time:j.time_pref?' ('+j.time_pref+')':'')+'.':'We’ve received your booking and will confirm a date with you.'}
 function jobBreak(j,ds,price,paid,left){
- var ok=function(d){return !/cancel|declin|void/i.test(d.status||'')&&(d.items||[]).length},
-  src=ds.filter(function(d){return d.type=='invoice'&&ok(d)})[0]||ds.filter(function(d){return d.type=='quote'&&ok(d)&&qacc(d)})[0]||ds.filter(function(d){return d.type=='quote'&&ok(d)})[0],
-  items=src?src.items:[],tot=src&&+src.total?+src.total:price,h='';
- h+='<div style="margin-top:18px"><h2>About this job</h2><p style="white-space:pre-wrap;margin:0">'+(j.description?E(j.description):src&&src.title?E(src.title):'<span class="pmut">'+E(j.job_type||'Job')+'. Our engineer will add full details after the visit.</span>')+'</p></div>';
- if(!tot&&!items.length)return h;
- h+='<div style="margin-top:18px"><h2>Price breakdown</h2>'+(src?'<p class="pmut" style="margin:0 0 6px">From your '+(src.type=='invoice'?'invoice':'quote')+(src.number?' '+E(src.number):'')+'</p>':'');
- h+='<div style="border:1px solid var(--line);border-radius:12px;overflow:hidden">';
- items.forEach(function(x){var q=x.q===''||x.q==null?1:+x.q||0,pp=+x.p||0,lt=Math.round(q*pp*100)/100,hasP=x.p!==''&&x.p!=null;
-  h+='<div style="display:flex;justify-content:space-between;gap:12px;padding:10px 12px;border-bottom:1px solid var(--line)"><div style="min-width:0"><div style="white-space:pre-wrap">'+E(x.d)+'</div>'+(hasP&&q!=1?'<small class="pmut">'+q+' × '+GBP(pp)+'</small>':'')+'</div><b style="white-space:nowrap">'+(hasP?GBP(lt):'Included')+'</b></div>'});
- var row=function(l,v,st){return '<div style="display:flex;justify-content:space-between;padding:8px 12px;'+(st||'')+'"><span>'+l+'</span><b>'+v+'</b></div>'};
- h+=row('Total',GBP(tot),'background:#f6f7f9;font-size:1.05rem')+(paid>0?row('Paid',GBP(paid)):'')+(paid>0||left>0?row(left>0?'Left to pay':'Balance',GBP(Math.max(0,tot-paid)),left>0?'color:var(--red)':''):'')+'</div>';
- h+='<p class="pmut" style="margin:6px 0 0;font-size:.85rem">Southwark Heating is not VAT registered, so no VAT is added.</p></div>';
+ var num=function(x){return x===''||x==null?0:+x||0},ok=function(d){return !/cancel|declin|void/i.test(d.status||'')&&(d.items||[]).length},
+  inv=ds.filter(function(d){return d.type=='invoice'&&ok(d)})[0],qt=ds.filter(function(d){return d.type=='quote'&&ok(d)&&qacc(d)})[0]||ds.filter(function(d){return d.type=='quote'&&ok(d)})[0],
+  V=(Array.isArray(j.lines)?j.lines:[]).filter(function(v){return String(v.d||'').trim()||num(v.labour)||(v.mats||[]).length}),h='';
+ var desc=[];if(j.description)desc.push(E(j.description));
+ if(V.length)desc.push(V.map(function(v,i){return (V.length>1?'<b>Visit '+(i+1)+(v.date?' ('+DT(v.date)+')':'')+':</b> ':'')+E(String(v.d||'').trim()||'Work carried out')}).join('<br>'));
+ if(!desc.length)desc.push(inv&&inv.title?E(inv.title):qt&&qt.title?E(qt.title):'<span class="pmut">'+E(j.job_type||'Job')+'. Our engineer will add full details after the visit.</span>');
+ h+='<div style="margin-top:18px"><h2>About this job</h2><p style="white-space:pre-wrap;margin:0">'+desc.join('<br><br>')+'</p></div>';
+ var line=function(d,q,pp,hasP,sub){var lt=Math.round(q*pp*100)/100;return '<div style="display:flex;justify-content:space-between;gap:12px;padding:10px 12px;border-bottom:1px solid var(--line)"><div style="min-width:0"><div style="white-space:pre-wrap">'+d+'</div>'+(sub?'<small class="pmut">'+sub+'</small>':hasP&&q!=1?'<small class="pmut">'+q+' × '+GBP(pp)+'</small>':'')+'</div><b style="white-space:nowrap">'+(hasP?GBP(lt):'Included')+'</b></div>'},
+  row=function(l,v,st){return '<div style="display:flex;justify-content:space-between;padding:8px 12px;'+(st||'')+'"><span>'+l+'</span><b>'+v+'</b></div>'},rows='',tot=price,from='';
+ if(inv){from='From your invoice'+(inv.number?' '+E(inv.number):'');tot=+inv.total||price;inv.items.forEach(function(x){var q=x.q===''||x.q==null?1:num(x.q);rows+=line(E(x.d),q,num(x.p),x.p!==''&&x.p!=null)})}
+ else if(V.length){var vt=0;V.forEach(function(v,i){var t=num(v.labour);
+   if(V.length>1)rows+='<div style="padding:8px 12px;background:#f6f7f9;font-weight:700;border-bottom:1px solid var(--line)">Visit '+(i+1)+(v.date?' · '+DT(v.date):'')+'</div>';
+   if(String(v.d||'').trim()||v.labour!==''&&v.labour!=null)rows+=line('Labour'+(V.length>1?'':'')+(String(v.d||'').trim()?' - '+E(v.d):''),1,t,v.labour!==''&&v.labour!=null);
+   (v.mats||[]).forEach(function(m){var q=m.q===''||m.q==null?1:num(m.q);t+=q*num(m.p);rows+=line(E(m.d||'Materials'),q,num(m.p),m.p!==''&&m.p!=null)});
+   if(V.length>1)rows+=row('Visit '+(i+1)+' total',GBP(t),'border-bottom:1px solid var(--line)');vt+=t});
+   tot=Math.round(vt*100)/100||price}
+ else if(qt){from='From your quote'+(qt.number?' '+E(qt.number):'');tot=+qt.total||price;qt.items.forEach(function(x){var q=x.q===''||x.q==null?1:num(x.q);rows+=line(E(x.d),q,num(x.p),x.p!==''&&x.p!=null)})}
+ if(!tot&&!rows)return h;
+ h+='<div style="margin-top:18px"><h2>Price breakdown</h2>'+(from?'<p class="pmut" style="margin:0 0 6px">'+from+'</p>':'')+'<div style="border:1px solid var(--line);border-radius:12px;overflow:hidden">'+rows+
+  row('Total',GBP(tot),'background:#f6f7f9;font-size:1.05rem')+(paid>0?row('Paid',GBP(paid)):'')+row(tot-paid>0?'Left to pay':'Balance',GBP(Math.max(0,tot-paid)),tot-paid>0?'color:var(--red)':'')+'</div>'+
+  '<p class="pmut" style="margin:6px 0 0;font-size:.85rem">Southwark Heating is not VAT registered, so no VAT is added.</p></div>';
  return h}
 
 /* ---------- quotes & invoices: open, Proceed, Pay Now ---------- */
