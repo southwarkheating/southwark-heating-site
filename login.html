@@ -160,6 +160,7 @@ document.getElementById('fmsg').textContent='The online form is not active yet. 
 (function(){
 'use strict';
 var SB_URL='https://ylyasshhvuhhpmpotera.supabase.co',SB_KEY='sb_publishable_FdGTquNbyai6eCKJvDbLsw_x5vYwaU9',HERE='https://southwarkheating.com/login',PHONE='07988 991963',TEL='tel:+447988991963',REVIEW='https://g.page/r/CfsQNlcypGPHECE/review';
+function phoneKey(p){return String(p||'').replace(/[^0-9]/g,'').replace(/^0/,'44')}function isPhoneLogin(x){var t=String(x||'').trim();return t&&!/@/.test(t)}function loginEmail(x){var t=String(x||'').trim();if(!isPhoneLogin(t))return t.toLowerCase();return phoneKey(t)+'@phone.southwarkheating.com'}function validLogin(x){var t=String(x||'').trim();if(/@/.test(t))return/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(t);return phoneKey(t).length>=10}
 var V=document.getElementById('pv');
 if(typeof supabase==='undefined'){V.innerHTML='<div class="pcard"><p class="perr">Could not load. Check your connection and refresh the page.</p></div>';return}
 var sb=supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
@@ -190,17 +191,17 @@ window.addEventListener('popstate',function(e){DEPTH=Math.max(0,DEPTH-1);if(REC)
 
 /* ---------- signed-out screens ---------- */
 function signIn(m,k){top();V.innerHTML='<div class="pcard"><h1>Customer login</h1><p class="pmut">View your jobs, certificates, invoices and payments with Southwark Heating.</p><div id="pmsg">'+msg(m,k)+'</div>'+
-'<form id="fin" class="pf" novalidate><label for="em">Email address</label><input id="em" type="email" autocomplete="email" inputmode="email" autocapitalize="none" required>'+
+'<form id="fin" class="pf" novalidate><label for="em">Email address or phone number</label><input id="em" type="text" autocomplete="username" inputmode="email" autocapitalize="none" required>'+
 '<label for="pw">Password</label><input id="pw" type="password" autocomplete="current-password" required><button class="btn btn-red" type="submit">Log in</button></form>'+
 '<div class="plinks"><button type="button" id="gof">Forgotten password?</button><button type="button" id="gos">Create an account</button></div></div>'+
 '<p class="pmut pc">Need help? Call <a href="'+TEL+'">'+PHONE+'</a></p>';
 on('gof',function(){nav({p:'forgot'})});on('gos',function(){nav({p:'signup'})});
-onSub('fin',async function(f){var b=f.querySelector('button');var em=v('em').toLowerCase(),pw=document.getElementById('pw').value;if(!em||!pw)return fail('Enter your email address and password.',em?'pw':'em');busy(b,'Logging in\u2026');
- var r=await sb.auth.signInWithPassword({email:em,password:pw});if(r.error){free(b);var t=/confirm/i.test(r.error.message)?'Please confirm your email first - check your inbox for the link we sent.':'That email and password don\u2019t match. Try again or reset your password.';return fail(t,'pw',['pw'])}})}
+onSub('fin',async function(f){var b=f.querySelector('button');var raw=v('em'),em=loginEmail(raw),pw=document.getElementById('pw').value;if(!raw||!pw)return fail('Enter your email address or phone number, and your password.',raw?'pw':'em');busy(b,'Logging in\u2026');
+ var r=await sb.auth.signInWithPassword({email:em,password:pw});if(r.error){free(b);var t=/confirm/i.test(r.error.message)?'Please confirm your email first - check your inbox for the link we sent.':'That '+(isPhoneLogin(raw)?'phone number':'email')+' and password don\u2019t match. Try again or reset your password.';return fail(t,'pw',['pw'])}})}
 
 function signUp(m){var inv=INVD;top();V.innerHTML=backBtn()+'<div class="pcard"><h1>Create your account</h1><p class="pmut">'+(inv?'Your details are already on file with us - just choose a password.':'Use the same email address you gave us when booking, so your jobs appear automatically.')+'</p><div id="pmsg">'+msg(m)+'</div>'+
 '<form id="fup" class="pf" novalidate><label for="nm">Full name</label><input id="nm" autocomplete="name" required>'+
-'<label for="em">Email address</label><input id="em" type="email" autocomplete="email" inputmode="email" autocapitalize="none" required>'+
+(inv&&!inv.email&&inv.phone?'<label for="em">Mobile number</label><input id="em" type="tel" autocomplete="tel" inputmode="tel" required>':'<label for="em">Email address</label><input id="em" type="email" autocomplete="email" inputmode="email" autocapitalize="none" required>')+
 (inv?'':'<label for="ph">Phone number</label><input id="ph" type="tel" autocomplete="tel" inputmode="tel">'+
 '<label for="ad1">Address line 1</label><input id="ad1" autocomplete="address-line1"><label for="ad2">Address line 2</label><input id="ad2" autocomplete="address-line2">'+
 '<label for="ad3">Town / City</label><input id="ad3" autocomplete="address-level2"><label for="ad4">County</label><input id="ad4" autocomplete="address-level1"><label for="pc">Postcode</label><input id="pc" autocomplete="postal-code" autocapitalize="characters">')+
@@ -208,23 +209,25 @@ function signUp(m){var inv=INVD;top();V.innerHTML=backBtn()+'<div class="pcard">
 '<label for="pw2">Confirm password</label><input id="pw2" type="password" autocomplete="new-password" required>'+
 '<button class="btn btn-red" type="submit">Create account</button></form><div class="plinks"><button type="button" id="goi">Already have an account? Log in</button></div></div>';
 on('goi',function(){back(function(){signIn()})});on('bkx',function(){back(function(){signIn()})});
-if(inv){document.getElementById('nm').value=inv.name||'';var ie=document.getElementById('em');ie.value=inv.email||'';if(inv.email){ie.readOnly=true;ie.insertAdjacentHTML('afterend','<small class="pmut">This is the email we have on file, so your account links to your records.</small>')}}
-onSub('fup',async function(f){var b=f.querySelector('button'),em=v('em').toLowerCase(),pw=document.getElementById('pw').value;
- if(!v('nm'))return fail('Please enter your name.','nm');if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em))return fail('Please enter a valid email address.','em');
+if(inv){document.getElementById('nm').value=inv.name||'';var ie=document.getElementById('em');ie.value=inv.email||inv.phone||'';if(!inv.email&&inv.phone){ie.readOnly=true;ie.insertAdjacentHTML('afterend','<small class="pmut">This is the mobile number we have on file. You\u2019ll log in with it.</small>')}if(inv.email){ie.readOnly=true;ie.insertAdjacentHTML('afterend','<small class="pmut">This is the email we have on file, so your account links to your records.</small>')}}
+onSub('fup',async function(f){var b=f.querySelector('button'),raw=v('em'),ph=isPhoneLogin(raw),em=loginEmail(raw),pw=document.getElementById('pw').value;
+ if(!v('nm'))return fail('Please enter your name.','nm');if(ph&&!INVD)return fail('To sign up with your mobile number, please use the text message link we send you, or call us on '+PHONE+'.','em');if(!validLogin(raw))return fail(ph?'Please enter a valid phone number.':'Please enter a valid email address or phone number.','em');
  if(pw.length<8)return fail('Your password needs at least 8 characters.','pw',['pw','pw2']);if(pw!==document.getElementById('pw2').value)return fail('The two passwords don\u2019t match. Please type them again - your other details are still here.','pw',['pw','pw2']);
- busy(b,'Creating account\u2026');var r=await sb.auth.signUp({email:em,password:pw,options:{emailRedirectTo:HERE,data:INVD?{name:v('nm'),invite:INVD.tok}:{name:v('nm'),phone:v('ph'),address:['ad1','ad2','ad3','ad4'].map(v).filter(Boolean).join(', '),postcode:v('pc')}}});
+ busy(b,'Creating account\u2026');var r=await sb.auth.signUp({email:em,password:pw,options:{emailRedirectTo:HERE,data:INVD?{name:v('nm'),invite:INVD.tok}:{name:v('nm'),phone:ph?raw.trim():v('ph'),address:['ad1','ad2','ad3','ad4'].map(v).filter(Boolean).join(', '),postcode:v('pc')}}});
  if(r.error){free(b);return fail(/rate|security purposes/i.test(r.error.message)?'Too many attempts. Please wait a minute and try again.':/password/i.test(r.error.message)?'Please choose a stronger password.':r.error.message,'pw')}
  if(r.data&&r.data.session)return;/* email confirmation switched off: already signed in */
+ if(ph)return;/* no real inbox to check for a phone-only signup - already signed in, or will hit dash() next */
  checkEmail('We\u2019ve sent a link to '+em+'. Tap it to confirm your email and finish creating your account. If you already have an account, just log in instead.')})}
 
 function checkEmail(t){top();V.innerHTML='<div class="pcard"><h1>Check your email</h1><p class="pok">'+E(t)+'</p><p class="pmut">Can\u2019t see it? Check your junk or spam folder.</p><div class="plinks"><button type="button" id="goi">Back to login</button></div></div>';on('goi',function(){signIn()})}
 
-function forgot(m){top();V.innerHTML=backBtn()+'<div class="pcard"><h1>Reset your password</h1><p class="pmut">Enter your email and we\u2019ll send you a link to choose a new password.</p><div id="pmsg">'+msg(m)+'</div>'+
-'<form id="ffg" class="pf" novalidate><label for="em">Email address</label><input id="em" type="email" autocomplete="email" inputmode="email" autocapitalize="none" required><button class="btn btn-red" type="submit">Send reset link</button></form><div class="plinks"><button type="button" id="goi">Back to login</button></div></div>';
+function forgot(m){top();V.innerHTML=backBtn()+'<div class="pcard"><h1>Reset your password</h1><p class="pmut">Enter your email or phone number and we\u2019ll send you a link to choose a new password.</p><div id="pmsg">'+msg(m)+'</div>'+
+'<form id="ffg" class="pf" novalidate><label for="em">Email address or phone number</label><input id="em" type="text" autocomplete="username" inputmode="email" autocapitalize="none" required><button class="btn btn-red" type="submit">Send reset link</button></form><div class="plinks"><button type="button" id="goi">Back to login</button></div></div>';
 on('goi',function(){back(function(){signIn()})});on('bkx',function(){back(function(){signIn()})});
-onSub('ffg',async function(f){var b=f.querySelector('button'),em=v('em').toLowerCase();if(!em)return fail('Please enter your email address.','em');busy(b,'Sending\u2026');
+onSub('ffg',async function(f){var b=f.querySelector('button'),raw=v('em'),ph=isPhoneLogin(raw),em=loginEmail(raw);if(!raw)return fail('Please enter your email address or phone number.','em');busy(b,'Sending\u2026');
+ if(ph){free(b);return fail('For a phone-only account, please call us on '+PHONE+' to reset your password.','em')}
  var r=await sb.auth.resetPasswordForEmail(em,{redirectTo:HERE});if(r.error&&/rate|security purposes/i.test(r.error.message)){free(b);return fail('Please wait a minute before asking for another link.','em')}
- checkEmail('If an account exists for '+em+', a password reset link is on its way.')})}
+ checkEmail('If an account exists for '+raw+', a password reset link is on its way.')})}
 
 function newPass(m,fromAcct){top();if(!fromAcct)REC=true;V.innerHTML=(fromAcct?backBtn():'')+'<div class="pcard"><h1>'+(fromAcct?'Change your password':'Choose a new password')+'</h1><div id="pmsg">'+msg(m)+'</div>'+
 '<form id="fnp" class="pf" novalidate><label for="pw">New password</label><input id="pw" type="password" autocomplete="new-password" minlength="8" required><small class="pmut">At least 8 characters.</small>'+
@@ -244,7 +247,7 @@ async function sign(paths){paths=paths.filter(function(p){return p&&!URLS[p]});i
 function drow(d){if(d.type=='quote'||d.type=='invoice')return qrow(d);var u=d.pdf&&URLS[d.pdf];return '<button type="button" class="prow" data-d="'+E(d.id)+'"><div><b>'+E(dlabel(d))+'</b>'+(d.number?' <small style="display:inline">'+E(d.number)+'</small>':'')+'<small>'+DT(d.approved_at||d.sent_at||d.created_at)+(d.locked?' \u00b7 Available once this job is paid in full':u?' \u00b7 Tap to view or download the PDF':' \u00b7 PDF not ready yet')+'</small></div><div style="text-align:right">'+(d.locked?'<span class="pill amb">Locked</span>':u?'<span class="pill ok">PDF</span>':'')+'</div></button>'}
 function payBtns(ds){return ds.filter(function(d){return owe(d)>0&&link(d)}).map(function(d){return '<a class="btn btn-red" style="display:block;text-align:center" href="'+E(link(d).url)+'" target="_blank" rel="noopener">Pay '+GBP(owe(d))+' securely ('+E(d.number||'invoice')+')</a>'}).join('')}
 
-async function load(){var r=await sb.rpc('portal_data');if(r.error)throw r.error;D=r.data||{};if(!D.linked)return;
+async function load(){var r=await sb.rpc('portal_data');if(r.error)throw r.error;D=r.data||{};if(!D.linked)return;try{var gu=await sb.auth.getUser();D.login_is_phone=/@phone\.southwarkheating\.com$/i.test((gu&&gu.data&&gu.data.user&&gu.data.user.email)||'')}catch(e){}
  await sign((D.documents||[]).map(function(d){return d.pdf}).concat((D.photos||[]).map(function(p){return p.path})))}
 
 function welcome(){try{if(sessionStorage.getItem('sh_wel'))return;sessionStorage.setItem('sh_wel','1');sb.functions.invoke('portal-welcome',{body:{}}).catch(function(){})}catch(e){}}
@@ -273,8 +276,13 @@ function render(note){note=note||PNOTE;PNOTE='';var c=(D.customers||[])[0]||{},f
  if(TAB=='pay'){var due2=dues().reduce(function(a,x){return a+x.amt},0);
   P.innerHTML='<div class="pcard"><small class="pmut">Outstanding balance</small><div class="pbig">'+GBP(due2)+'</div>'+dueHtml()+'</div><div class="pcard"><h2>Payments received</h2>'+(PY.map(function(p){var net=(+p.amount||0)-(+p.refunded_amount||0);return '<div class="prow" style="cursor:default"><div><b>'+GBP(p.amount)+'</b><small>'+DT(p.paid_at)+(p.method?' \u00b7 '+E(p.method):'')+'</small></div>'+(p.status=='refunded'?'<span class="pill">Refunded</span>':p.status=='part_refunded'?'<span class="pill amb">'+GBP(p.refunded_amount)+' refunded</span>':'<span class="pill ok">Received</span>')+'</div>'}).join('')||'<p class="pmut">No payments yet.</p>')+'</div>'}
  if(TAB=='acct')P.innerHTML=(D.customers||[]).map(function(c){return '<div class="pcard"><h2>My details</h2><dl class="pdl"><dt>Name</dt><dd>'+E(c.name)+'</dd><dt>Email</dt><dd>'+E(c.email)+'</dd><dt>Phone</dt><dd>'+E(c.phone||'-')+'</dd><dt>Address</dt><dd>'+E([c.address,c.postcode].filter(Boolean).join(', ')||'-')+'</dd>'+(c.ref?'<dt>Customer ref</dt><dd>'+E(c.ref)+'</dd>':'')+'</dl></div>'}).join('')+
+  (D.login_is_phone?'<div class="pcard"><h2>Add an email address</h2><p class="pmut">Optional - you can keep logging in with your phone number. Adding an email just means we can reach you there too.</p><div id="aemsg"></div><form id="faem" class="pf" novalidate><label for="ae">Email address</label><input id="ae" type="email" autocomplete="email" inputmode="email" autocapitalize="none" required><button class="btn btn-dark" type="submit">Save email</button></form></div>':'')+
   ((D.properties||[]).length?'<div class="pcard"><h2>My properties</h2>'+D.properties.map(function(p){return '<div class="prow" style="cursor:default"><div><b>'+E(p.address)+'</b><small>'+E(p.postcode||'')+'</small></div></div>'}).join('')+'</div>':'')+
   applCard()+'<div class="pcard"><p class="pmut">To change your details, call <a href="'+TEL+'">'+PHONE+'</a> or email <a href="mailto:info@southwarkheating.com">info@southwarkheating.com</a>.</p><button class="btn btn-dark" id="cpw">Change password</button></div>';
+ if(document.getElementById('faem'))onSub('faem',async function(f){var b=f.querySelector('button'),ae=document.getElementById('ae').value.trim();busy(b,'Saving\u2026');
+  var r=await sb.rpc('portal_add_email',{p_email:ae}),o=r&&r.data;free(b);
+  if(r.error||!o||!o.ok){document.getElementById('aemsg').innerHTML='<p class="perr" role="alert">'+E((o&&o.error)||'Sorry, that didn\u2019t save. Please try again.')+'</p>';return}
+  document.getElementById('aemsg').innerHTML='<p class="pok">Thanks - we\u2019ve saved '+E(ae.toLowerCase())+'. You can still log in with your mobile number.</p>';f.remove()});
  on('cpw',function(){nav({p:'pass'})});on('apadd',function(){nav({p:'appl',id:''})});on('apnext',function(){nav({p:'appl',id:''})});on('bkst',function(){nav({p:'book'})});
  [].forEach.call(P.querySelectorAll('[data-j]'),function(b){b.addEventListener('click',function(){nav({p:'job',id:b.dataset.j})})})}
 
@@ -458,8 +466,8 @@ function applForm(id){var a=(D&&D.my_appliances||[]).filter(function(x){return x
 async function invite(){V.innerHTML='<p class="pmut pc">Loading\u2026</p>';var r;try{r=await sb.rpc('portal_invite_info',{tok:INV})}catch(e){r={error:e}}
  history.replaceState(null,'',location.pathname);var i=r&&!r.error&&r.data;
  if(!i)return signUp('This sign-up link has expired or was already used. You can still create your account below - please use the email address you gave us.');
- if(i.has_account){signIn('You already have an account'+(i.email?' for '+i.email:'')+'. Please log in.','pok');var e=document.getElementById('em');if(e&&i.email)e.value=i.email;return}
- INVD={tok:INV,name:i.name||'',email:i.email||''};signUp()}
+ if(i.has_account){signIn('You already have an account'+(i.email?' for '+i.email:'')+'. Please log in'+(!i.email&&i.phone?' with your mobile number':'')+'.','pok');var e=document.getElementById('em');if(e&&(i.email||i.phone))e.value=i.email||i.phone;return}
+ INVD={tok:INV,name:i.name||'',email:i.email||'',phone:i.phone||''};signUp()}
 
 async function logout(){try{await sb.auth.signOut()}catch(e){}hl(true);D=null;URLS={};TAB='home';DEPTH=0;try{sessionStorage.removeItem('sh_wel')}catch(e){}history.replaceState(null,'',location.pathname);signIn('You\u2019ve been logged out.','pok')}
 
