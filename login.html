@@ -354,17 +354,17 @@ function jobBreak(j,ds,price,paid,left){
   inv=ds.filter(function(d){return d.type=='invoice'&&ok(d)})[0],qt=ds.filter(function(d){return d.type=='quote'&&ok(d)&&qacc(d)})[0]||ds.filter(function(d){return d.type=='quote'&&ok(d)})[0],
   V=(Array.isArray(j.lines)?j.lines:[]).filter(function(v){return String(v.d||'').trim()||num(v.labour)||(v.mats||[]).length}),h='';
  var desc=[];if(j.description)desc.push(E(j.description));
- if(V.length)desc.push(V.map(function(v,i){return (V.length>1?'<b>Visit '+(i+1)+(v.date?' ('+DT(v.date)+')':'')+':</b> ':'')+E(String(v.d||'').trim()||'Work carried out')}).join('<br>'));
+ if(V.length)desc.push(V.map(function(v,i){return (V.length>1?'<b>Item '+(i+1)+(v.date?' ('+DT(v.date)+')':'')+':</b> ':'')+E(String(v.d||'').trim()||'Work carried out')}).join('<br>'));
  if(!desc.length)desc.push(inv&&inv.title?E(inv.title):qt&&qt.title?E(qt.title):'<span class="pmut">'+E(j.job_type||'Job')+'. Our engineer will add full details after the visit.</span>');
  h+='<div style="margin-top:18px"><h2>About this job</h2><p style="white-space:pre-wrap;margin:0">'+desc.join('<br><br>')+'</p></div>';
  var line=function(d,q,pp,hasP,sub){var lt=Math.round(q*pp*100)/100;return '<div style="display:flex;justify-content:space-between;gap:12px;padding:10px 12px;border-bottom:1px solid var(--line)"><div style="min-width:0"><div style="white-space:pre-wrap">'+d+'</div>'+(sub?'<small class="pmut">'+sub+'</small>':hasP&&q!=1?'<small class="pmut">'+q+' × '+GBP(pp)+'</small>':'')+'</div><b style="white-space:nowrap">'+(hasP?GBP(lt):'Included')+'</b></div>'},
   row=function(l,v,st){return '<div style="display:flex;justify-content:space-between;padding:8px 12px;'+(st||'')+'"><span>'+l+'</span><b>'+v+'</b></div>'},rows='',tot=price,from='';
  if(inv){from='From your invoice'+(inv.number?' '+E(inv.number):'');tot=+inv.total||price;inv.items.forEach(function(x){var q=x.q===''||x.q==null?1:num(x.q);rows+=line(E(x.d),q,num(x.p),x.p!==''&&x.p!=null)})}
  else if(V.length){var vt=0;V.forEach(function(v,i){var t=num(v.labour);
-   if(V.length>1)rows+='<div style="padding:8px 12px;background:#f6f7f9;font-weight:700;border-bottom:1px solid var(--line)">Visit '+(i+1)+(v.date?' · '+DT(v.date):'')+'</div>';
+   if(V.length>1)rows+='<div style="padding:8px 12px;background:#f6f7f9;font-weight:700;border-bottom:1px solid var(--line)">Item '+(i+1)+(v.date?' · '+DT(v.date):'')+'</div>';
    if(String(v.d||'').trim()||v.labour!==''&&v.labour!=null)rows+=line('Labour'+(V.length>1?'':'')+(String(v.d||'').trim()?' - '+E(v.d):''),1,t,v.labour!==''&&v.labour!=null);
    (v.mats||[]).forEach(function(m){var q=m.q===''||m.q==null?1:num(m.q);t+=q*num(m.p);rows+=line(E(m.d||'Materials'),q,num(m.p),m.p!==''&&m.p!=null)});
-   if(V.length>1)rows+=row('Visit '+(i+1)+' total',GBP(t),'border-bottom:1px solid var(--line)');vt+=t});
+   if(V.length>1)rows+=row('Item '+(i+1)+' total',GBP(t),'border-bottom:1px solid var(--line)');vt+=t});
    tot=Math.round(vt*100)/100||price}
  else if(qt){from='From your quote'+(qt.number?' '+E(qt.number):'');tot=+qt.total||price;qt.items.forEach(function(x){var q=x.q===''||x.q==null?1:num(x.q);rows+=line(E(x.d),q,num(x.p),x.p!==''&&x.p!=null)})}
  if(!tot&&!rows)return h;
