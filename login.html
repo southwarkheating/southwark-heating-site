@@ -184,7 +184,7 @@ var DEPTH=0;function nav(st){DEPTH++;history.pushState(st,'',location.pathname);
 function back(fb){if(DEPTH>0)history.back();else fb()}
 function backBtn(){return '<button class="pback" type="button" id="bkx">\u2039 Back</button>'}
 function draw(st){st=st||{};if(st.p=='signup')return signUp();if(st.p=='forgot')return forgot();if(st.p=='signin')return signIn();
- if(st.p=='pass')return newPass(null,true);if(st.p=='job')return job(st.id);if(st.p=='doc')return doc(st.id,st.pay);if(st.p=='appl')return applForm(st.id);if(st.p=='book')return bookScreen(st.svc);if(st.p=='dash'){TAB=st.tab||'home';return D?render():dash()}
+ if(st.p=='pass')return newPass(null,true);if(st.p=='details')return detailsForm();if(st.p=='job')return job(st.id);if(st.p=='doc')return doc(st.id,st.pay);if(st.p=='appl')return applForm(st.id);if(st.p=='book')return bookScreen(st.svc);if(st.p=='dash'){TAB=st.tab||'home';return D?render():dash()}
  return D?(TAB='home',render()):signIn()}
 V.addEventListener('click',function(e){var t=e.target&&e.target.closest&&e.target.closest('[data-d],[data-ap],[data-pay]');if(!t)return;e.preventDefault();if(t.dataset.pay)nav({p:'doc',id:t.dataset.pay,pay:1});else if(t.dataset.d)nav({p:'doc',id:t.dataset.d});else nav({p:'appl',id:t.dataset.ap})});
 window.addEventListener('popstate',function(e){DEPTH=Math.max(0,DEPTH-1);if(REC)return;draw(e.state)});
@@ -207,7 +207,7 @@ function signUp(m){var inv=INVD;top();V.innerHTML=backBtn()+'<div class="pcard">
 '<label for="ad3">Town / City</label><input id="ad3" autocomplete="address-level2"><label for="ad4">County</label><input id="ad4" autocomplete="address-level1"><label for="pc">Postcode</label><input id="pc" autocomplete="postal-code" autocapitalize="characters">')+
 '<label for="pw">Choose a password</label><input id="pw" type="password" autocomplete="new-password" minlength="8" required><small class="pmut">At least 8 characters.</small>'+
 '<label for="pw2">Confirm password</label><input id="pw2" type="password" autocomplete="new-password" required>'+
-'<button class="btn btn-red" type="submit">Create account</button></form><div class="plinks"><button type="button" id="goi">Already have an account? Log in</button></div></div>';
+'<p class="pmut" style="margin:6px 0 10px"><b>Please check all your details are correct</b> and change anything that\u2019s wrong. You can update them any time from My account.</p><button class="btn btn-red" type="submit">Create account</button></form><div class="plinks"><button type="button" id="goi">Already have an account? Log in</button></div></div>';
 on('goi',function(){back(function(){signIn()})});on('bkx',function(){back(function(){signIn()})});
 if(inv){document.getElementById('nm').value=inv.name||'';var ie=document.getElementById('em');ie.value=inv.email||inv.phone||'';if(!inv.email&&inv.phone){ie.readOnly=true;ie.insertAdjacentHTML('afterend','<small class="pmut">This is the mobile number we have on file. You\u2019ll log in with it.</small>')}if(inv.email){ie.readOnly=true;ie.insertAdjacentHTML('afterend','<small class="pmut">This is the email we have on file, so your account links to your records.</small>')}}
 onSub('fup',async function(f){var b=f.querySelector('button'),raw=v('em'),ph=isPhoneLogin(raw),em=loginEmail(raw),pw=document.getElementById('pw').value;
@@ -262,6 +262,7 @@ function render(note){note=note||PNOTE;PNOTE='';var c=(D.customers||[])[0]||{},f
  '<div class="ptabs" role="tablist">'+tabs.map(function(t){return '<button role="tab" data-t="'+t[0]+'" aria-selected="'+(TAB==t[0])+'">'+t[1]+'</button>'}).join('')+'</div><div id="pb"></div>'+((D.jobs||[]).some(function(j){return /complete/i.test(j.status||'')})?'<div class="prev"><b>Happy with your Southwark Heating service?</b><span>We\u2019d really appreciate it if you could take a moment to leave us a Google review.</span><a class="btn btn-red" href="'+REVIEW+'" target="_blank" rel="noopener">Leave a Google Review</a></div>':'');
  on('lo',logout);[].forEach.call(V.querySelectorAll('.ptabs button'),function(b){b.addEventListener('click',function(){if(TAB!=b.dataset.t)nav({p:'dash',tab:b.dataset.t})})});
  var P=document.getElementById('pb'),J=D.jobs||[],DS=D.documents||[],PY=D.payments||[];
+ if(TAB=='home'&&!c.checked)V.querySelector('.ptabs').insertAdjacentHTML('beforebegin','<div class="pcard" style="border:2px solid var(--red)"><h2>Please check your details</h2><p class="pmut">Make sure everything we have for you is correct, so we can reach you and send our engineer to the right place.</p><dl class="pdl"><dt>Name</dt><dd>'+E(c.name||'-')+'</dd><dt>Email</dt><dd>'+E(D.login_is_phone&&!c.email?'-':c.email||'-')+'</dd><dt>Phone</dt><dd>'+E(c.phone||'-')+'</dd><dt>Address</dt><dd>'+E(c.address||'-')+'</dd><dt>Postcode</dt><dd>'+E(c.postcode||'-')+'</dd></dl><div class="pbtns"><button class="btn btn-red" type="button" id="dok">Yes, all correct</button><button class="btn btn-dark" type="button" id="edd">Change something</button></div></div>');
  if(TAB=='home'){var due=dues().reduce(function(a,x){return a+x.amt},0),now=new Date().toISOString().slice(0,10),
    next=J.filter(function(j){return j.job_date&&j.job_date>=now&&!/cancel|complete/i.test(j.status)}).sort(function(a,b){return a.job_date>b.job_date?1:-1})[0],
    certs=DS.filter(function(d){return d.cert});
@@ -275,18 +276,42 @@ function render(note){note=note||PNOTE;PNOTE='';var c=(D.customers||[])[0]||{},f
   P.innerHTML=grp.map(function(g){return '<div class="pcard"><h2>'+g[0]+'</h2>'+(g[1].map(drow).join('')||'<p class="pmut">None yet.</p>')+'</div>'}).join('')}
  if(TAB=='pay'){var due2=dues().reduce(function(a,x){return a+x.amt},0);
   P.innerHTML='<div class="pcard"><small class="pmut">Outstanding balance</small><div class="pbig">'+GBP(due2)+'</div>'+dueHtml()+'</div><div class="pcard"><h2>Payments received</h2>'+(PY.map(function(p){var net=(+p.amount||0)-(+p.refunded_amount||0);return '<div class="prow" style="cursor:default"><div><b>'+GBP(p.amount)+'</b><small>'+DT(p.paid_at)+(p.method?' \u00b7 '+E(p.method):'')+'</small></div>'+(p.status=='refunded'?'<span class="pill">Refunded</span>':p.status=='part_refunded'?'<span class="pill amb">'+GBP(p.refunded_amount)+' refunded</span>':'<span class="pill ok">Received</span>')+'</div>'}).join('')||'<p class="pmut">No payments yet.</p>')+'</div>'}
- if(TAB=='acct')P.innerHTML=(D.customers||[]).map(function(c){return '<div class="pcard"><h2>My details</h2><dl class="pdl"><dt>Name</dt><dd>'+E(c.name)+'</dd><dt>Email</dt><dd>'+E(c.email)+'</dd><dt>Phone</dt><dd>'+E(c.phone||'-')+'</dd><dt>Address</dt><dd>'+E([c.address,c.postcode].filter(Boolean).join(', ')||'-')+'</dd>'+(c.ref?'<dt>Customer ref</dt><dd>'+E(c.ref)+'</dd>':'')+'</dl></div>'}).join('')+
+ if(TAB=='acct')P.innerHTML=(D.customers||[]).map(function(c){return '<div class="pcard"><h2>My details</h2><dl class="pdl"><dt>Name</dt><dd>'+E(c.name)+'</dd><dt>Email</dt><dd>'+E(c.email)+'</dd><dt>Phone</dt><dd>'+E(c.phone||'-')+'</dd><dt>Address</dt><dd>'+E([c.address,c.postcode].filter(Boolean).join(', ')||'-')+'</dd>'+(c.ref?'<dt>Customer ref</dt><dd>'+E(c.ref)+'</dd>':'')+'</dl><button class="btn btn-dark" type="button" id="edd">Edit my details</button></div>'}).join('')+
   (D.login_is_phone?'<div class="pcard"><h2>Add an email address</h2><p class="pmut">Optional - you can keep logging in with your phone number. Adding an email just means we can reach you there too.</p><div id="aemsg"></div><form id="faem" class="pf" novalidate><label for="ae">Email address</label><input id="ae" type="email" autocomplete="email" inputmode="email" autocapitalize="none" required><button class="btn btn-dark" type="submit">Save email</button></form></div>':'')+
   ((D.properties||[]).length?'<div class="pcard"><h2>My properties</h2>'+D.properties.map(function(p){return '<div class="prow" style="cursor:default"><div><b>'+E(p.address)+'</b><small>'+E(p.postcode||'')+'</small></div></div>'}).join('')+'</div>':'')+
-  applCard()+'<div class="pcard"><p class="pmut">To change your details, call <a href="'+TEL+'">'+PHONE+'</a> or email <a href="mailto:info@southwarkheating.com">info@southwarkheating.com</a>.</p><button class="btn btn-dark" id="cpw">Change password</button></div>';
+  applCard()+'<div class="pcard"><h2>Password</h2><button class="btn btn-dark" id="cpw">Change password</button></div>';
  if(document.getElementById('faem'))onSub('faem',async function(f){var b=f.querySelector('button'),ae=document.getElementById('ae').value.trim();busy(b,'Saving\u2026');
   var r=await sb.rpc('portal_add_email',{p_email:ae}),o=r&&r.data;free(b);
   if(r.error||!o||!o.ok){document.getElementById('aemsg').innerHTML='<p class="perr" role="alert">'+E((o&&o.error)||'Sorry, that didn\u2019t save. Please try again.')+'</p>';return}
   document.getElementById('aemsg').innerHTML='<p class="pok">Thanks - we\u2019ve saved '+E(ae.toLowerCase())+'. You can still log in with your mobile number.</p>';f.remove()});
- on('cpw',function(){nav({p:'pass'})});on('apadd',function(){nav({p:'appl',id:''})});on('apnext',function(){nav({p:'appl',id:''})});on('bkst',function(){nav({p:'book'})});
+ on('cpw',function(){nav({p:'pass'})});on('edd',function(){nav({p:'details'})});on('dok',async function(){var b=this;busy(b,'Saving\u2026');var r;try{r=await sb.rpc('portal_update_details',{p:{confirm_only:true}})}catch(e){r={error:e}}free(b);if(r.error||!r.data||!r.data.ok)return alert((r.data&&r.data.error)||'Sorry, that didn\u2019t save. Please try again.');c.checked=new Date().toISOString();render('Thanks for confirming your details.')});on('apadd',function(){nav({p:'appl',id:''})});on('apnext',function(){nav({p:'appl',id:''})});on('bkst',function(){nav({p:'book'})});
  [].forEach.call(P.querySelectorAll('[data-j]'),function(b){b.addEventListener('click',function(){nav({p:'job',id:b.dataset.j})})})}
 
 
+/* ---------- customer edits their own details -> updates the business app straight away ---------- */
+function detailsForm(m){var c=(D&&D.customers||[])[0];if(!c)return dash();top();var ph=!!D.login_is_phone;
+ V.innerHTML=backBtn()+'<div class="pcard"><h1>Edit my details</h1><p class="pmut">Check everything is correct and change anything that’s wrong. Your changes go straight to our team.</p><div id="pmsg">'+msg(m)+'</div>'+
+ '<form id="fdt" class="pf" novalidate><label for="dnm">Full name</label><input id="dnm" autocomplete="name" required>'+
+ '<label for="dem">Email address</label><input id="dem" type="email" autocomplete="email" inputmode="email" autocapitalize="none">'+(ph?'':'<small class="pmut">This is also your login. If you change it we’ll email a link to the new address to confirm it.</small>')+
+ '<label for="dph">Phone number</label><input id="dph" type="tel" autocomplete="tel" inputmode="tel">'+(ph?'<small class="pmut">This is your login number. To change it, call us on '+E(PHONE)+'.</small>':'')+
+ '<label for="dad">Address</label><input id="dad" autocomplete="street-address"><label for="dpc">Postcode</label><input id="dpc" autocomplete="postal-code" autocapitalize="characters">'+
+ '<button class="btn btn-red" type="submit">Save my details</button></form><div class="plinks"><button type="button" id="cnx">Cancel</button></div></div>';
+ var set=function(id,x){var e=document.getElementById(id);if(e)e.value=x||''};set('dnm',c.name);set('dem',c.email);set('dph',c.phone);set('dad',c.address);set('dpc',c.postcode);
+ if(ph)document.getElementById('dph').readOnly=true;
+ var bk=function(){back(function(){TAB='acct';render()})};on('bkx',bk);on('cnx',bk);
+ onSub('fdt',async function(f){var b=f.querySelector('button[type=submit]'),em=v('dem').toLowerCase(),old=String(c.email||'').toLowerCase(),pc=v('dpc').toUpperCase().replace(/\s+/g,' ');
+  if(!v('dnm'))return fail('Please enter your name.','dnm');
+  if(em&&!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em))return fail('Please enter a valid email address.','dem');
+  if(!ph&&!em)return fail('Please enter your email address - it’s how you log in.','dem');
+  if(v('dph')&&v('dph').replace(/\D/g,'').length<10)return fail('Please enter a valid phone number.','dph');
+  if(pc&&!/^[A-Z]{1,2}[0-9][A-Z0-9]? ?[0-9][A-Z]{2}$/.test(pc))return fail('Please enter a valid UK postcode.','dpc');
+  busy(b,'Saving…');var r;try{r=await sb.rpc('portal_update_details',{p:{name:v('dnm'),phone:v('dph'),address:v('dad'),postcode:pc}})}catch(e){r={error:e}}
+  if(r.error||!r.data||!r.data.ok){free(b);return fail((r.data&&r.data.error)||'Sorry, your details couldn’t be saved. Please try again.')}
+  var note='Your details are saved. Thank you.';
+  if(em&&em!==old){if(ph){var a;try{a=await sb.rpc('portal_add_email',{p_email:em})}catch(e){a={error:e}}if(a.error||!a.data||!a.data.ok)note='Your details are saved, but the email couldn’t be added: '+((a.data&&a.data.error)||'please try again.')}
+   else{var u;try{u=await sb.auth.updateUser({email:em},{emailRedirectTo:HERE})}catch(e){u={error:e}}
+    note=u.error?'Your other details are saved, but the email couldn’t be changed: '+(/already|registered|exists/i.test(u.error.message||'')?'that email is already used by another account.':'please try again.'):'Your details are saved. We’ve sent a link to '+em+' - tap it to confirm your new email. Until then, keep logging in with '+old+'.'}}
+  free(b);TAB='acct';history.replaceState({p:'dash',tab:'acct'},'',location.pathname);dash(note)})}
 /* ---------- V6: everything the customer owes, with a pay button for each ---------- */
 function dues(){var DS=D.documents||[],out=[];
  DS.forEach(function(d){var o=owe(d);if(o>0)out.push({d:d,amt:o,lbl:(d.number?'Invoice '+d.number:'Invoice'),paid:+d.paid||0})});
