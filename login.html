@@ -140,7 +140,7 @@ input,select,textarea{font:inherit;font-size:16px;padding:12px;border:1px solid 
 </main>
 <footer class="ftr"><div class="wrap grid4">
 <div><h2>Southwark Heating</h2><p>South London and surrounding areas<br>South Dock Marina<br>Rope Street<br>London<br>SE16 7SZ</p></div>
-<div><h2>Contact</h2><p>Phone: <a href="tel:+447988991963">07988 991963</a><br>Email: <a href="mailto:info@southwarkheating.com">info@southwarkheating.com</a></p><p><strong>Gas Safe registration:</strong> <span class="gsy">985690</span></p></div>
+<div><h2>Contact</h2><p>Phone: <a href="tel:+442080502022">020 8050 2022</a><br>Mobile (call, text or WhatsApp): <a href="tel:+447988991963">07988 991963</a><br>Email: <a href="mailto:info@southwarkheating.com">info@southwarkheating.com</a></p><p><strong>Gas Safe registration:</strong> <span class="gsy">985690</span></p></div>
 <div><h2>Pages</h2><p class="links"><a href="./">Home</a><a href="services">Services</a><a href="heating">Heating &amp; Boilers</a><a href="plumbing">Plumbing</a><a href="book-a-service">Book a Service</a><a href="price-list">Price List</a><a href="care-plan">Boiler Care Plan</a><a href="pest-control">Pest Control</a><a href="about">About</a><a href="emergency">Emergency</a><a href="contact">Contact</a><a href="login">Customer Login</a><a href="property-professionals">Work With Us</a></p></div>
 <div><h2>Legal</h2><p><a href="privacy">Privacy Policy</a><br><a href="terms">Terms &amp; Conditions</a></p></div>
 </div><p class="copy">&copy; Southwark Heating. Gas Safe Registered, No. <span class="gsy">985690</span>.</p></footer>
@@ -159,7 +159,7 @@ document.getElementById('fmsg').textContent='The online form is not active yet. 
 <script>
 (function(){
 'use strict';
-var SB_URL='https://ylyasshhvuhhpmpotera.supabase.co',SB_KEY='sb_publishable_FdGTquNbyai6eCKJvDbLsw_x5vYwaU9',HERE='https://southwarkheating.com/login',PHONE='07988 991963',TEL='tel:+447988991963',REVIEW='https://g.page/r/CfsQNlcypGPHECE/review';
+var SB_URL='https://ylyasshhvuhhpmpotera.supabase.co',SB_KEY='sb_publishable_FdGTquNbyai6eCKJvDbLsw_x5vYwaU9',HERE='https://southwarkheating.com/login',PHONE='020 8050 2022 or 07988 991963',TEL='tel:+447988991963',REVIEW='https://g.page/r/CfsQNlcypGPHECE/review';
 function phoneKey(p){return String(p||'').replace(/[^0-9]/g,'').replace(/^0/,'44')}function isPhoneLogin(x){var t=String(x||'').trim();return t&&!/@/.test(t)}function loginEmail(x){var t=String(x||'').trim();if(!isPhoneLogin(t))return t.toLowerCase();return phoneKey(t)+'@phone.southwarkheating.com'}function validLogin(x){var t=String(x||'').trim();if(/@/.test(t))return/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(t);return phoneKey(t).length>=10}
 var V=document.getElementById('pv');
 if(typeof supabase==='undefined'){V.innerHTML='<div class="pcard"><p class="perr">Could not load. Check your connection and refresh the page.</p></div>';return}
@@ -379,7 +379,7 @@ function qacc(d){return d.type=='quote'&&(!!d.accepted||/accepted/i.test(d.statu
    Stored PDFs are fetched with a short-lived signed link; storage only issues it if the server says this customer may
    read it (portal_can_read -> job-specific payment rules). Invoices/quotes with no stored PDF are drawn here from the
    same figures shown on screen. Locked documents never get a link. */
-var JSPDF='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',BIZP={name:'Southwark Heating',phone:'07988 991963',email:'info@southwarkheating.com',web:'southwarkheating.com',gas:'985690'},_jsp=null;
+var JSPDF='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',BIZP={name:'Southwark Heating',phone:'020 8050 2022',email:'info@southwarkheating.com',web:'southwarkheating.com',gas:'985690'},_jsp=null;
 function loadPdfLib(){if(window.jspdf)return Promise.resolve(window.jspdf);if(_jsp)return _jsp;_jsp=new Promise(function(ok,no){var t=document.createElement('script');t.src=JSPDF;t.onload=function(){window.jspdf?ok(window.jspdf):no()};t.onerror=function(){_jsp=null;no()};document.head.appendChild(t)});return _jsp}
 function pdfName(d){return (dlabel(d)+' '+(d.number||String(d.approved_at||d.sent_at||d.created_at||'').slice(0,10))).replace(/\(.*?\)/g,'').replace(/[^A-Za-z0-9\- ]/g,'').trim().replace(/\s+/g,'-')+'.pdf'}
 function canGen(d){return d.type=='invoice'||d.type=='quote'}

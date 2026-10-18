@@ -6,7 +6,7 @@ export default {
   "horizon_days": 60,
   "weekend_surcharge": 0,
   "arrival_note": "Your engineer will confirm your arrival time with you before the day.",
-  "phone": "07988 991963",
+  "phone": "020 8050 2022",
   "install_warranty_months": 12,
   "price_note": "Fixed price for a standard like-for-like installation. Anything extra found on site is agreed with you first."
  },
