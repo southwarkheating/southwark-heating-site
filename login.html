@@ -415,11 +415,11 @@ function genPdf(d){var P=new window.jspdf.jsPDF({unit:'mm',format:'a4'}),c=(D.cu
 /* ---------- V7: book a visit from inside the account ----------
    Free days/times come from the server (portal_slots) and the booking is made by the server (portal_book), which re-checks the
    time, sets the price and puts the job on this customer's own account. Payment uses the same secure Stripe pages as the website. */
-var BSVC=[{k:'labour',n:'Standard Labour – Heating, Gas & Plumbing Repairs (First Hour)',p:90,link:'https://buy.stripe.com/dRm3cw2Po06J5gu7kWc3m05',d:'Repairs and faults. £90 covers up to the first hour on site; any extra time is charged in 30-minute steps and parts are extra. Same-day visits available.'},
- {k:'cp12svc',n:'CP12 Gas Safety Certificate Inspection + Boiler Service',p:160,link:'https://buy.stripe.com/00waEY9dM9Hj6ky6gSc3m0P',d:'Includes BOTH the CP12 gas safety certificate inspection and a standard boiler service.'},
- {k:'boiler',n:'Boiler Service',p:90,link:'https://buy.stripe.com/5kQ6oI4Xw06JbESgVwc3m0N',d:'A boiler service only. It does not include a CP12 gas safety certificate.'},
- {k:'cp12',n:'CP12 Gas Safety Certificate Inspection',p:90,link:'https://buy.stripe.com/8x26oIdu2g5H4cq48Kc3m0O',d:'CP12 certification only. It does not include a boiler service.'},
- {k:'pest',n:'Pest Control',p:90,link:'https://buy.stripe.com/00wcN6cpY3iVeR420Cc3m06',d:'Pest control visit. Any additional work is agreed with you first.'}],BK={};
+var BSVC=[{k:'labour',n:'Standard Labour – Heating, Gas & Plumbing Repairs (First Hour)',p:95,link:'https://buy.stripe.com/4gM5kE9dM4mZ5gu8p0c3m16',d:'Repairs and faults. £95 covers up to the first hour on site; any extra time is charged in 30-minute steps and parts are extra. Same-day visits available.'},
+ {k:'cp12svc',n:'CP12 Gas Safety Certificate Inspection + Boiler Service',p:175,link:'https://buy.stripe.com/5kQ00k3Ts4mZ9wKbBcc3m17',d:'Includes BOTH the CP12 gas safety certificate inspection and a standard boiler service.'},
+ {k:'boiler',n:'Boiler Service',p:95,link:'https://buy.stripe.com/5kQbJ2du2f1D24i7kWc3m18',d:'A boiler service only. It does not include a CP12 gas safety certificate.'},
+ {k:'cp12',n:'CP12 Gas Safety Certificate Inspection',p:95,link:'https://buy.stripe.com/7sY7sM0Hg06J7oC7kWc3m19',d:'CP12 certification only. It does not include a boiler service.'},
+ {k:'pest',n:'Pest Control',p:95,link:'https://buy.stripe.com/bJe00k3Ts8DfdN0gVwc3m1a',d:'Pest control visit. Any additional work is agreed with you first.'}],BK={};
 function bsvcByName(n){return BSVC.filter(function(x){return x.n.replace(/[–-]/g,'-')==String(n||'').replace(/[–-]/g,'-')})[0]}
 function payJobUrl(j){var sv=bsvcByName(j.job_type),em=((D.customers||[])[0]||{}).email||'';if(!sv)return'';return sv.link+'?client_reference_id=j_'+encodeURIComponent(j.id)+(em?'&prefilled_email='+encodeURIComponent(em):'')}
 function jobOwes(j){return !/cancel/i.test(j.status||'')&&/^(awaiting payment|payment pending)$/i.test(j.pay_status||'')&&!!bsvcByName(j.job_type)&&!(D.documents||[]).some(function(d){return d.job_id==j.id&&d.type=='invoice'})}

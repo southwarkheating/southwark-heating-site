@@ -8917,7 +8917,7 @@ export default {
   "controls": "Heating controls"
  },
  "included": [
-  "50% off your first annual boiler service with us (£45 instead of £90)",
+  "50% off your first annual boiler service with us (£47.50 instead of £95)",
   "Installation by a Gas Safe registered engineer",
   "Removal and disposal of your old boiler",
   "Standard flue kit for your new boiler",
