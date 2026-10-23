@@ -42,6 +42,7 @@
     s.async = true;
     s.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(GA_ID);
     document.head.appendChild(s);
+    if (/booking-confirmation/.test(location.pathname)) track('booking_confirmed');
   }
 
   function deleteGACookies() {
@@ -131,9 +132,31 @@
     anchor.parentNode.insertBefore(a, br.nextSibling);
   }
 
+  /* ---------- conversion events (only sent once analytics has been accepted) ---------- */
+  function track(name, params) {
+    if (!loaded || typeof window.gtag !== 'function') return;
+    try { window.gtag('event', name, params || {}); } catch (e) {}
+  }
+  function bindEvents() {
+    document.addEventListener('click', function (e) {
+      var a = e.target && e.target.closest ? e.target.closest('a[href]') : null;
+      if (!a) return;
+      var href = a.getAttribute('href') || '';
+      if (href.indexOf('tel:') === 0) track('phone_call_click', { number_type: href.indexOf('2080502022') > -1 ? 'landline' : 'mobile' });
+      else if (href.indexOf('wa.me/') > -1) track('whatsapp_click');
+      else if (href.indexOf('mailto:') === 0) track('email_click');
+      else if (href.indexOf('buy.stripe.com') > -1) track('begin_checkout');
+    }, true);
+    document.addEventListener('submit', function (e) {
+      var f = e.target;
+      track('form_submit', { form_id: (f && f.id) || '' });
+    });
+  }
+
   /* ---------- start ---------- */
   function init() {
     addFooterLink();
+    bindEvents();
     var c = getConsent();
     if (c === 'granted') loadGA();
     else if (c === 'denied') stopGA();
