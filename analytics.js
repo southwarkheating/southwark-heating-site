@@ -171,7 +171,7 @@
 (function () {
   try {
     var s = document.createElement('script');
-    s.src = 'page-content.js';
+    s.src = 'page-content.js?v=4';
     s.defer = true;
     document.head.appendChild(s);
   } catch (e) {}
