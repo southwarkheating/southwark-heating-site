@@ -159,6 +159,7 @@ input,select,textarea{font:inherit;font-size:16px;padding:12px;border:1px solid 
 .ow-ribbon{position:absolute;top:40px;left:10px;z-index:2;background:#fff;color:var(--navy);font-weight:800;font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:999px}
 .ow-more{text-align:center;padding:10px 0 40px}
 .ow-empty{text-align:center;padding:50px 20px;border:2px dashed var(--line);border-radius:16px;margin:26px 0;background:#fff}
+.ow-static{border:0;background:none;padding:20px 0}.bsg{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:18px 0 20px;text-align:left}@media(min-width:700px){.bsg{grid-template-columns:repeat(3,1fr);gap:16px}}.bsg figure{margin:0;background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:0 2px 10px rgba(17,43,79,.08)}.bsg img{display:block;width:100%;aspect-ratio:3/4;object-fit:cover}.bsg figcaption{padding:10px 12px;font-weight:700;color:var(--navy);font-size:.92rem;line-height:1.3}
 .ow-empty h2{margin:0 0 8px}
 .ow-skel{border-radius:14px;aspect-ratio:1/1;background:linear-gradient(90deg,#e9eef4 0%,#f6f8fb 50%,#e9eef4 100%);background-size:200% 100%;animation:owsk 1.2s linear infinite}
 @keyframes owsk{to{background-position:-200% 0}}
@@ -232,10 +233,11 @@ input,select,textarea{font:inherit;font-size:16px;padding:12px;border:1px solid 
  <div class="ow-grid" id="owGrid" aria-busy="true">
   <div class="ow-skel"></div><div class="ow-skel"></div><div class="ow-skel"></div><div class="ow-skel"></div><div class="ow-skel"></div><div class="ow-skel"></div><div class="ow-skel"></div><div class="ow-skel"></div>
  </div>
- <div class="ow-empty" id="owEmpty" hidden>
-  <h2>Fresh photos on the way</h2>
-  <p>We&rsquo;re adding photos from recent jobs. In the meantime, see what customers say on Google or get a fixed price for your job.</p>
-  <a class="btn btn-red" href="boiler-finder">Get a fixed boiler price</a><a class="btn btn-dark" href="https://g.page/r/CfsQNlcypGPHECE" rel="noopener">Read our Google reviews</a>
+ <div class="ow-empty ow-static" id="owEmpty" hidden>
+  <h2>Recent boiler services</h2>
+  <p>Real boilers from our recent services across South London.</p>
+  <div class="bsg"><figure><img src="boiler-service-worcester-greenstar-9i-system.webp" width="900" height="1200" loading="lazy" decoding="async" alt="Worcester Greenstar 9i System boiler serviced by Southwark Heating"><figcaption>Worcester Greenstar 9i System</figcaption></figure><figure><img src="boiler-service-ideal-logic-combi-c30.webp" width="900" height="1200" loading="lazy" decoding="async" alt="Ideal Logic Combi C30 boiler serviced by Southwark Heating"><figcaption>Ideal Logic Combi C30</figcaption></figure><figure><img src="boiler-service-vaillant-ecotec-plus-937.webp" width="900" height="1200" loading="lazy" decoding="async" alt="Vaillant ecoTEC plus 937 boiler serviced by Southwark Heating"><figcaption>Vaillant ecoTEC plus 937</figcaption></figure><figure><img src="boiler-service-vaillant-ecotec-pro-28.webp" width="900" height="1200" loading="lazy" decoding="async" alt="Vaillant ecoTEC pro 28 boiler serviced by Southwark Heating"><figcaption>Vaillant ecoTEC pro 28</figcaption></figure><figure><img src="boiler-service-ideal-logic-combi.webp" width="900" height="1200" loading="lazy" decoding="async" alt="Ideal Logic Combi boiler serviced by Southwark Heating"><figcaption>Ideal Logic Combi</figcaption></figure><figure><img src="boiler-service-worcester-greenstar-25si.webp" width="900" height="1200" loading="lazy" decoding="async" alt="Worcester Greenstar 25Si boiler serviced by Southwark Heating"><figcaption>Worcester Greenstar 25Si</figcaption></figure></div>
+  <a class="btn btn-red" href="boiler-servicing">About boiler servicing</a><a class="btn btn-dark" href="https://g.page/r/CfsQNlcypGPHECE" rel="noopener">Read our Google reviews</a>
  </div>
  <div class="ow-more"><button class="btn btn-dark" type="button" id="owMore" hidden>Show more work</button><div id="owSentinel" aria-hidden="true"></div></div>
  <noscript><p class="ow-empty">Turn on JavaScript to see photos of our work, or call 020 8050 2022.</p></noscript>
