@@ -54,7 +54,7 @@
     if (!figs.length) return;
     css(CSS_SL);
     var html = figs.join(''), grid = document.querySelector('.bsg'), host;
-    if (grid) { var mark = grid.children.length; grid.insertAdjacentHTML('beforeend', html); host = [].slice.call(grid.children, mark); }
+    if (grid) { var mark = grid.children.length; grid.insertAdjacentHTML('beforeend', html); host = [].slice.call(grid.children, mark); ['pc-photos', 'pc-photos-grid'].forEach(function (id) { var el = document.getElementById(id); if (el) el.hidden = false; }); }
     else { css(CSS_BSG); var sec = section('sec', '<h2>Photos from recent jobs</h2><div class="bsg">' + html + '</div><p class="center" style="text-align:center;margin-top:14px"><a href="our-work">See more of our work</a></p>'); host = [].slice.call(sec.querySelectorAll('.bsg figure')); }
     host.forEach(slider);
   }
