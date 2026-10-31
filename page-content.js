@@ -39,7 +39,7 @@
     var figs = [];
     jobs.forEach(function (j) {
       var ph = (j.photos || []).slice(), ord = { before: 1, during: 2, after: 3 };
-      ph.sort(function (a, b) { return (ord[a.stage] - ord[b.stage]) || (a.sort - b.sort); });
+      ph.sort(function (a, b) { return (a.sort - b.sort) || (ord[a.stage] - ord[b.stage]); });
       var cover = ph.filter(function (p) { return p.stage === 'after'; })[0];
       if (cover) ph = [cover].concat(ph.filter(function (p) { return p !== cover; }));
       if (!ph.length) return;
