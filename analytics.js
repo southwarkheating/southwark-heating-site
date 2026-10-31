@@ -166,3 +166,13 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
 })();
+
+/* Photos and testimonials added from the business app (see page-content.js) */
+(function () {
+  try {
+    var s = document.createElement('script');
+    s.src = 'page-content.js';
+    s.defer = true;
+    document.head.appendChild(s);
+  } catch (e) {}
+})();
