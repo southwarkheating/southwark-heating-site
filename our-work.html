@@ -290,7 +290,7 @@ function get(path,range){var h={};for(var k in H)h[k]=H[k];if(range){h['Range-Un
 var SEL='select=id,job_date,title,category,area,description,featured,photos:gallery_photos(id,path,thumb_path,width,height,stage,sort)';
 function prep(j){var ph=(j.photos||[]).slice();var order={before:0,during:1,after:2};ph.sort(function(a,b){return (order[a.stage]-order[b.stage])||(a.sort-b.sort)});j.photos=ph;
  j.before=ph.filter(function(p){return p.stage==='before'});j.after=ph.filter(function(p){return p.stage==='after'});
- j.cover=j.after[0]||ph[ph.length-1]||null;return j}
+ j.cover=(j.photos||[]).slice().sort(function(a,b){return a.sort-b.sort})[0]||null;return j}
 
 /* ---- stats + filter chips ---- */
 function count(n,el){if(RM||!n){el.textContent=n;return}var t0=null;function step(t){if(!t0)t0=t;var k=Math.min(1,(t-t0)/900);el.textContent=Math.round(n*(1-Math.pow(1-k,3)));if(k<1)requestAnimationFrame(step)}requestAnimationFrame(step)}
