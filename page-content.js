@@ -33,28 +33,60 @@
     if (!document.getElementById('reviews')) s.id = 'reviews';
   }
 
+  var CSS_SL = '.bsg .pcw{position:relative}.bsg .pcs{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch;aspect-ratio:3/4;overscroll-behavior-x:contain}.bsg .pcs::-webkit-scrollbar{display:none}.bsg .pcs img{flex:0 0 100%;width:100%;height:100%;scroll-snap-align:start;object-fit:cover;aspect-ratio:auto}.bsg .pcd{position:absolute;left:0;right:0;bottom:8px;display:flex;justify-content:center;gap:5px;pointer-events:none}.bsg .pcd i{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.55);box-shadow:0 0 2px rgba(0,0,0,.5)}.bsg .pcd i.on{background:#fff}.bsg .pcn{position:absolute;top:8px;right:8px;background:rgba(12,31,56,.75);color:#fff;font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:99px;pointer-events:none}';
+
   function photos(jobs) {
     var figs = [];
     jobs.forEach(function (j) {
-      var ph = (j.photos || []).slice(), ord = { before: 0, during: 1, after: 2 };
+      var ph = (j.photos || []).slice(), ord = { before: 1, during: 2, after: 3 };
       ph.sort(function (a, b) { return (ord[a.stage] - ord[b.stage]) || (a.sort - b.sort); });
-      ph.forEach(function (p) {
+      var cover = ph.filter(function (p) { return p.stage === 'after'; })[0];
+      if (cover) ph = [cover].concat(ph.filter(function (p) { return p !== cover; }));
+      if (!ph.length) return;
+      var imgs = ph.map(function (p, n) {
         var alt = j.title + (j.area ? ' in ' + j.area : '') + (p.stage !== 'after' ? ' (' + p.stage + ')' : '') + ' by Southwark Heating';
         var k = p.width && p.height ? 640 / Math.max(p.width, p.height) : 0, wh = k ? ' width="' + Math.round(p.width * k) + '" height="' + Math.round(p.height * k) + '"' : '';
-        figs.push('<figure><img src="' + E(pub(p.thumb_path)) + '"' + wh + ' loading="lazy" decoding="async" alt="' + E(alt) + '"><figcaption>' + E(j.title) + '</figcaption></figure>');
-      });
+        return '<img src="' + E(pub(p.thumb_path)) + '"' + wh + ' loading="' + (n ? 'lazy' : 'eager') + '" decoding="async" alt="' + E(alt) + '">';
+      }).join('');
+      var many = ph.length > 1;
+      figs.push('<figure><div class="pcw"><div class="pcs"' + (many ? ' tabindex="0" aria-label="' + E(j.title) + ': ' + ph.length + ' photos, swipe to see more"' : '') + '>' + imgs + '</div>' +
+        (many ? '<span class="pcn">1/' + ph.length + '</span><div class="pcd">' + ph.map(function (_, n) { return '<i' + (n ? '' : ' class="on"') + '></i>'; }).join('') + '</div>' : '') +
+        '</div><figcaption>' + E(j.title) + '</figcaption></figure>');
     });
     if (!figs.length) return;
-    figs = figs.slice(0, 24).join('');
-    var grid = document.querySelector('.bsg');
-    if (grid) { grid.insertAdjacentHTML('beforeend', figs); return; }
-    css(CSS_BSG);
-    section('sec', '<h2>Photos from recent jobs</h2><div class="bsg">' + figs + '</div><p class="center" style="text-align:center;margin-top:14px"><a href="our-work">See more of our work</a></p>');
+    css(CSS_SL);
+    var html = figs.join(''), grid = document.querySelector('.bsg'), host;
+    if (grid) { var mark = grid.children.length; grid.insertAdjacentHTML('beforeend', html); host = [].slice.call(grid.children, mark); }
+    else { css(CSS_BSG); var sec = section('sec', '<h2>Photos from recent jobs</h2><div class="bsg">' + html + '</div><p class="center" style="text-align:center;margin-top:14px"><a href="our-work">See more of our work</a></p>'); host = [].slice.call(sec.querySelectorAll('.bsg figure')); }
+    host.forEach(slider);
+  }
+
+  /* one picture per job: changes by itself every few seconds and can be swiped */
+  var RM = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function slider(fig, idx) {
+    var box = fig.querySelector('.pcs'); if (!box) return;
+    var n = box.children.length; if (n < 2) return;
+    var dots = fig.querySelectorAll('.pcd i'), cnt = fig.querySelector('.pcn'), cur = 0, hold = 0, vis = false, t;
+    function mark() {
+      var w = box.clientWidth || 1, c = Math.round(box.scrollLeft / w); if (c === cur) return; cur = Math.max(0, Math.min(n - 1, c));
+      for (var i = 0; i < dots.length; i++) dots[i].className = i === cur ? 'on' : ''; if (cnt) cnt.textContent = (cur + 1) + '/' + n;
+    }
+    box.addEventListener('scroll', function () { clearTimeout(t); t = setTimeout(mark, 60); }, { passive: true });
+    ['touchstart', 'pointerdown', 'wheel', 'focus'].forEach(function (e) { box.addEventListener(e, function () { hold = Date.now() + 8000; }, { passive: true }); });
+    if (RM) return;
+    if ('IntersectionObserver' in window) new IntersectionObserver(function (es) { vis = es[0].isIntersecting; }).observe(box); else vis = true;
+    setTimeout(function () {
+      setInterval(function () {
+        if (!vis || document.hidden || Date.now() < hold) return;
+        var next = (cur + 1) % n;
+        try { box.scrollTo({ left: next * box.clientWidth, behavior: 'smooth' }); } catch (e) { box.scrollLeft = next * box.clientWidth; }
+      }, 3500);
+    }, (idx % 3) * 900);
   }
 
   function run() {
     get('site_testimonials?select=name,area,quote,rating&published=eq.true&pages=cs.' + tag + '&order=created_at.asc&limit=30').then(testimonials).catch(function () {});
-    get('gallery_jobs?select=title,area,photos:gallery_photos(thumb_path,width,height,stage,sort)&published=eq.true&pages=cs.' + tag + '&order=job_date.desc&limit=12').then(photos).catch(function () {});
+    get('gallery_jobs?select=title,area,photos:gallery_photos(thumb_path,width,height,stage,sort)&published=eq.true&pages=cs.' + tag + '&order=job_date.desc&limit=24').then(photos).catch(function () {});
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run); else run();
 })();
