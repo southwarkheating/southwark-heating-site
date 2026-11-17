@@ -196,7 +196,7 @@ var en=function(n){return f.elements[n]?f.elements[n].value:''};
 curId=bid([cur,en('email'),en('postcode'),en('preferred_date')].join('|').toLowerCase());
 var io={booking_id:curId,service_key:cur,price:s.price,name:en('name'),email:en('email'),phone:en('phone'),address:en('address'),postcode:en('postcode'),preferred_date:en('preferred_date'),preferred_time:en('preferred_time'),message:(em.checked?'[PRIORITY EMERGENCY VISIT - £50 priority fee included] ':'')+en('message'),_gotcha:en('_gotcha')};var ip=sendIntake(io).then(function(ok){return ok?ok:sendIntake(io)});;
 ip.then(function(saved){if(saved){try{notifyApp(curId)}catch(x){}}return saved}).then(function(good){
-if(!good){go.disabled=false;go.textContent='Confirm booking';er.textContent='Sorry, we could not send your booking. Please try again or call 020 8050 2022 or 07988 991963.';return}
+if(!good){go.disabled=false;go.textContent='Confirm booking';er.textContent='Sorry, we could not send your booking. Please check your details above (especially your email address and phone number) and try again, or call 020 8050 2022 or 07988 991963 and we will book you in.';return}
 sent=true;write();try{showDone();done.scrollIntoView()}catch(x){}
 var vc=(vIn.value||'').trim();if(vc){Promise.race([ip,new Promise(function(r){setTimeout(r,2500)})]).then(function(){vApply(vc,0)},function(){vApply(vc,0)});return}
 setTimeout(function(){var go2=function(){window.location.href=payUrl(s)};Promise.race([ip,new Promise(function(r){setTimeout(r,2500)})]).then(go2,go2)},600)})})})();
@@ -231,6 +231,57 @@ sc.onload=async function(){try{var sb=supabase.createClient('https://ylyasshhvuh
  if(n){var p=document.createElement('p');p.className='note';p.id='acctfill';p.textContent='You\u2019re logged in, so we\u2019ve filled in your details from your account. Please check they\u2019re right.';var at=document.getElementById('rest');(at&&at.parentNode?at.parentNode.insertBefore(p,at.nextSibling):f.insertBefore(p,f.firstChild))}
 }catch(e){}};document.head.appendChild(sc)})();
 </script>
+<style>.ferr{display:block;color:#b42318;font-size:.88rem;font-weight:600;margin:6px 0 0;line-height:1.35}.fbad input,.fbad select,input.fbad,select.fbad{border-color:#b42318!important;box-shadow:0 0 0 3px rgba(180,35,24,.15)!important}</style>
+<script>/* Booking form: checks every box before sending and tells the customer exactly what is wrong and how to fix it. Runs before the booking code; the booking code itself is unchanged. */
+(function(){var f=document.getElementById('bk');if(!f)return;
+var EMAIL=/^[^\s@]{1,64}@[^\s@]+\.[^\s@]{2,}$/,PC=/^([A-Z]{1,2}[0-9][A-Z0-9]?)\s*([0-9][A-Z]{2})$/;
+var TYPO={'gmial.com':'gmail.com','gmai.com':'gmail.com','gmail.co':'gmail.com','gmail.co.uk':'gmail.com','gamil.com':'gmail.com','gnail.com':'gmail.com','hotmial.com':'hotmail.com','hotmail.co':'hotmail.co.uk','hotmai.com':'hotmail.com','yahoo.co':'yahoo.co.uk','yaho.com':'yahoo.com','outlok.com':'outlook.com','icloud.co':'icloud.com','iclod.com':'icloud.com'};
+function el(n){return f.elements[n]}
+function box(n){var e=el(n);return e?(e.closest('label')||e.parentNode):null}
+function msg(n,t){var e=el(n);if(!e)return;var b=box(n),m=b.querySelector('.ferr');
+ if(!t){if(m)m.remove();b.classList.remove('fbad');e.removeAttribute('aria-invalid');return}
+ if(!m){m=document.createElement('span');m.className='ferr';m.setAttribute('role','alert');b.appendChild(m)}m.textContent=t;b.classList.add('fbad');e.setAttribute('aria-invalid','true')}
+/* tidy up obvious slips automatically */
+function tidy(n){var e=el(n);if(!e)return;var v=e.value.replace(/\s+/g,' ').trim();
+ if(n==='email'){v=v.replace(/\s/g,'').replace(/,/g,'.').replace(/\.+$/,'').toLowerCase()}
+ if(n==='postcode'){var p=v.toUpperCase().replace(/\s/g,'');var m=PC.exec(p);v=m?m[1]+' '+m[2]:v.toUpperCase()}
+ if(n==='phone'){v=v.replace(/[^\d+()\-\s]/g,'')}
+ if(e.value!==v)e.value=v}
+function check(n){var e=el(n);if(!e)return '';var v=(e.value||'').trim();
+ switch(n){
+ case 'name':if(!v)return 'Please enter your full name.';if(v.replace(/[^A-Za-zÀ-ɏ]/g,'').length<2)return 'Your name looks incomplete. Please enter your first name and surname, e.g. Jane Smith.';return '';
+ case 'email':if(!v)return 'Please enter your email address so we can send your booking confirmation.';
+  if(v.indexOf('@')<0){var g=v.match(/^(.+?)\.(gmail|hotmail|outlook|yahoo|icloud|live|btinternet|aol|me)\.(.+)$/);return 'Your email address is missing the @ sign.'+(g?' Did you mean '+g[1]+'@'+g[2]+'.'+g[3]+'?':' It should look like name@example.com.')}
+  if((v.match(/@/g)||[]).length>1)return 'Your email address has more than one @ sign. It should look like name@example.com.';
+  var d=v.split('@')[1];if(TYPO[d])return 'Please check your email address. Did you mean '+v.split('@')[0]+'@'+TYPO[d]+'?';
+  if(!EMAIL.test(v))return 'Your email address looks incomplete. Check the part after the @, e.g. name@gmail.com.';return '';
+ case 'phone':if(!v)return 'Please enter a phone number so we can confirm your appointment.';
+  if(/[^\d+()\-\s]/.test(v))return 'Your phone number should only contain numbers (and + for international numbers).';
+  var dg=v.replace(/\D/g,''),intl=/^\+|^00/.test(v);
+  if(intl){var cc=v.replace(/^\+|^00/,'').replace(/\D/g,'');if(/^44/.test(cc)){var r=cc.slice(2).replace(/^0/,'');if(r.length!==10)return 'This UK number has '+r.length+' digits after +44 but should have 10, e.g. +44 7988 991963.';return ''}
+   if(cc.length<8)return 'Your international number looks too short. Please include the country code, e.g. +33 6 12 34 56 78.';if(cc.length>15)return 'Your phone number has too many digits. Please check it.';return ''}
+  if(dg.charAt(0)==='0'){if(dg.length<11)return 'Your phone number has '+dg.length+' digits but UK numbers have 11, e.g. 07988 991963. Please check for a missing digit.';if(dg.length>11)return 'Your phone number has '+dg.length+' digits but UK numbers have 11, e.g. 07988 991963. Please check for an extra digit.';return ''}
+  if(dg.length>=7&&dg.length<=15&&dg.charAt(0)==='7'&&dg.length===10)return 'Please add a 0 at the start of your mobile number, e.g. 07988 991963.';
+  return 'Please start your number with 0 (UK) or with + and your country code if it is a foreign number, e.g. +33 6 12 34 56 78.';
+ case 'address':if(!v)return 'Please enter the address where the work is needed.';if(v.length<5||!/[A-Za-z]{2}/.test(v))return 'Please enter the full address, including house or flat number and street, e.g. 12 Rope Street.';return '';
+ case 'postcode':if(!v)return 'Please enter the postcode of the property.';if(!PC.test(v.toUpperCase().replace(/\s/g,'')))return 'That doesn’t look like a valid UK postcode. It should look like SE16 7SZ.';return '';
+ case 'preferred_date':if(!v)return 'Please choose your preferred date.';if(e.min&&v<e.min)return 'That date isn’t available. Please choose a date from '+e.min.split('-').reverse().join('/')+' onwards.';return '';
+ case 'preferred_time':if(!v)return 'Please choose a preferred time (morning, afternoon or no preference).';return '';}
+ return ''}
+var FIELDS=['preferred_date','preferred_time','name','email','phone','address','postcode'];
+FIELDS.forEach(function(n){var e=el(n);if(!e)return;
+ e.addEventListener('blur',function(){tidy(n);if(e.value.trim())msg(n,check(n))});
+ e.addEventListener('input',function(){if(box(n).classList.contains('fbad'))msg(n,check(n))});
+ e.addEventListener('change',function(){if(box(n).classList.contains('fbad'))msg(n,check(n))})});
+/* capture phase: runs before the booking code and before the cancellation tick-box check */
+document.addEventListener('submit',function(ev){if(!ev.target||ev.target.id!=='bk')return;var bad=[],er=document.getElementById('err');
+ FIELDS.forEach(function(n){tidy(n);var t=check(n);msg(n,t);if(t)bad.push(n)});
+ if(!f.querySelector('input[name="svc"]:checked'))bad.unshift('svc');
+ if(!bad.length)return;
+ ev.preventDefault();ev.stopImmediatePropagation();
+ if(er)er.textContent=bad[0]==='svc'?'Please choose a service at the top of the form.':(bad.length===1?'Please fix the box highlighted in red above, then press Confirm booking again.':'Please fix the '+bad.length+' boxes highlighted in red above, then press Confirm booking again.');
+ try{var first=bad[0]==='svc'?f.querySelector('input[name="svc"]'):el(bad[0]);(first.closest('label')||first).scrollIntoView({block:'center',behavior:'smooth'});if(bad[0]!=='svc')first.focus({preventScroll:true})}catch(x){}},true);
+})();</script>
 <script>/* Cancellation acknowledgement: checked before the booking form's own handler runs. The booking code itself is unchanged. */
 document.addEventListener('submit',function(e){if(!e.target||e.target.id!=='bk')return;var c=document.getElementById('cancelAck');if(c&&!c.checked){e.preventDefault();e.stopImmediatePropagation();var er=document.getElementById('err');if(er)er.textContent='Please tick the box to confirm you would like the work carried out within the 14-day cancellation period.';try{c.focus();c.closest('label').scrollIntoView({block:'center'})}catch(x){}}},true);</script>
 <script src="analytics.js" defer></script>
