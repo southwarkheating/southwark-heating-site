@@ -225,7 +225,7 @@ document.getElementById('fmsg').textContent='The online form is not active yet. 
 <script>
 /* Area intro: our van drives across the screen . Self-removing, purely visual. */
 (function(){
-if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)return; try{if(sessionStorage.getItem('sh_van'))return}catch(e){}
+var vf=/[?&]van\b/.test(location.search);if(!vf){if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)return; try{if(sessionStorage.getItem('sh_van'))return}catch(e){}}
 var st=document.createElement('style');
 st.textContent='.vi-o{position:fixed;inset:0;pointer-events:none;z-index:2147483000;overflow:hidden;transition:opacity .35s ease}'+
 '.vi-v{position:absolute;left:0;top:56%;width:min(72vw,460px);height:auto;aspect-ratio:1400/597;transform:translateX(-110%);animation:viDrive 1.6s cubic-bezier(.55,.05,.4,1) forwards;filter:drop-shadow(0 10px 12px rgba(17,43,79,.25))}'+
